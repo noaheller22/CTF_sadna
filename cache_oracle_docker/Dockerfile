@@ -11,8 +11,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy all project files into the container
 COPY . .
 
-# Expose port 5000 for the Flask app
-EXPOSE 5000
+# Expose port 3244 for the Flask app
+EXPOSE 3244
 
 # Command to run the Flask app
 CMD ["python", "oracle_api.py"]

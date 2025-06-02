@@ -6,6 +6,7 @@ from Crypto.Cipher import PKCS1_v1_5
 
 from cache_functions import Cache
 
+
 # Setup
 with open("private.pem", "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
@@ -92,8 +93,8 @@ def oracle():
         return jsonify({"request accepted"})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "an error has accured"}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=3244)
