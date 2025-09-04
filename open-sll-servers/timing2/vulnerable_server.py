@@ -1,9 +1,7 @@
-import socket, subprocess, os
+import socket, subprocess, os, time
 
 OPENSSL_BIN = "/a/home/cc/students/cs/danielknebel/CTF_sadna/open-sll-servers/timing2/openssl-0.9.8/bin/openssl"
-PRIVATE_KEY = "/a/home/cc/students/cs/danielknebel/CTF_sadna/open-sll-servers/timing2/openssl-0.9.8zg/server.key"
-CERT_FILE   = "/a/home/cc/students/cs/danielknebel/CTF_sadna/open-sll-servers/timing2/openssl-0.9.8zg/server.crt"
-
+PRIVATE_KEY = "./server.key"
 
 def handle_client(client_sock):
     ciphertext = client_sock.recv(2048)
@@ -21,18 +19,20 @@ def handle_client(client_sock):
 
     os.remove("ciphertext.bin")
 
-    # Important: don’t leak stderr → attacker must use timing
+    # Artificial timing gap to make timing oracle precise
     if result.returncode == 0:
-        client_sock.send(b"valid")
+        time.sleep(0.05)   # add 50 ms delay for valid ciphertexts
     else:
-        client_sock.send(b"invalid")
+        time.sleep(0.0)    # no delay for invalid ciphertexts
+
+    client_sock.send(b"done")
 
 def main():
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_sock.bind(('0.0.0.0', 4434))
     server_sock.listen(5)
-    print("Timing-vulnerable server listening on port 4434")
+    print("Timing-vulnerable server (with artificial gap) running on port 4434")
     while True:
         client_sock, _ = server_sock.accept()
         handle_client(client_sock)
