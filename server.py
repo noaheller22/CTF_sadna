@@ -92,13 +92,15 @@ def get_stage(player_id):
     res = {"stage" : game.curr_stage[player_id], "ip": game.ips[game.curr_stage[player_id]], "port": game.ports[game.curr_stage[player_id]]}
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
-        with open("./the_attack/attack_level_1.py", "r", encoding="utf-8") as f:
-            res['final_attack_1'] = f.read()
+        with open("./the_attack/attack_level_1.py", "rb") as f:
+            file_bytes = f.read()
+            res['final_attack_1'] = base64.b64encode(file_bytes).decode('ascii')
         with open("./the_attack/attack_level_2.py", "r", encoding="utf-8") as f:
             res['final_attack_2'] = f.read()
-        with open("./the_attack/attack_level_3.py", "r", encoding="utf-8") as f:
-            res['final_attack_3'] = f.read()
-    return jsonify(res)    
+        with open("./the_attack/attack_level_3.py", "rb") as f:
+            file_bytes = f.read()
+            res['final_attack_3'] = base64.b64encode(file_bytes).decode('ascii')
+    return jsonify(res)
 
 def generate_cyphers(private_key, count=game.cyphers_num):
     cipher = PKCS1_v1_5.new(private_key.publickey())
