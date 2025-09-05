@@ -15,36 +15,35 @@ class ctf_server() :
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
-            j = 5 ## remove this and change j to i when all oracles are created
+            j = 6 ## remove this and change j to i when all oracles are created
             with open(f"private{j}.pem", "rb") as f:
                 self.stages_keys[i] = RSA.import_key(f.read())
         
         ##dummies
         self.stages_hints = {
             0 : "hint1", ## stage0 oracle
-            1 : "hint2", ## stage0 oracle
-            2 : "hint3", ## stage0 oracle
-            3 : "hint4", ## stage0 oracle
-            4 : "hint5", ## stage0 oracle
+            1 : "hint2", ## stage1 oracle
+            2 : "hint3", ## stage2 oracle
+            3 : "hint4", ## stage3 oracle
+            4 : "hint5", ## stage4 oracle
             5 : "hint6"  ## master oracle (needs hint?)
         }
         self.curr_stage = {}  
         self.ports = {
             0 : 0,  ## stage0 oracle
-            1 : 1,  ## stage2 oracle
-            2 : 2,  ## stage3 oracle
-            3 : 3,  ## stage4 oracle
-            4 : 4,  ## stage5 oracle
+            1 : 1,  ## stage1 oracle
+            2 : 2,  ## stage2 oracle
+            3 : 3244,  ## stage3 oracle
+            4 : 4,  ## stage4 oracle
             5 : 5   ## master oracle
         }
         self.ips = {
             0 : 6,  ## stage0 oracle
             1 : 7,  ## stage1 oracle
             2 : 8,  ## stage2 oracle
-            3 : 9,  ## stage3 oracle
+            3 : '192.168.1.137',  ## stage3 oracle
             4 : 10, ## stage4 oracle
-            5 : 11, ## stage5 oracle
-            6 : 12  ## master oracle
+            5 : 11, ## master oracle
         }
 
 app = Flask(__name__)
