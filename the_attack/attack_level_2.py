@@ -184,7 +184,7 @@ def narrow_m(rsa_key, prev_intervals, s, B):
 
     Given the previous set of intervals and the current s, computes the new intervals
     [a, b] such that the corresponding plaintext m = (c0 * s^e mod n) lies within
-    the valid PKCS#1 v1.5 range (i.e., 2B ≤ m < 3B).
+    the valid PKCS#1 v1.5 range (i.e., 2B <= m < 3B).
 
     Inputs : rsa_key        : RSA key object with modulus n.
              prev_intervals : List of tuples (a, b) representing the previous valid ranges of m.
