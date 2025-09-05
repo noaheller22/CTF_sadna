@@ -72,10 +72,11 @@ level 3: level 2 + partial implementaion\n""")
                 print("Invalid level. Choose [1/2/3]")
             else : 
                 print("Use the following code:\n")
-                code = res[f'final_attack_{cmd}']
+                print(res[f'final_attack_{cmd}'])
+                """code = res[f'final_attack_{cmd}']
                 file_bytes = base64.b64decode(code)
                 file_code = file_bytes.decode('utf-8', errors='replace')
-                print(file_code)
+                print(file_code)"""
                 print("Would you like to change level? [y/n]")
                 cmd = input(">>> ").strip().lower()
                 if cmd == 'n' :
