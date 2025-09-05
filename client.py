@@ -59,7 +59,17 @@ class CTF () :
         print(f"""************ \nThis is your chance to prove your worth.\n
 Prepare your bleichenbacher attack, and attack using the master oracle!\n
 ip: {res['ip']} port: {res['port']}\n 
-Decipher the following message: \n{res['master_message']}\n\n************\n Goodbye!\n""") 
+Decipher the following message by completing the given attack.\n
+The message: \n{res['master_message']}
+Choose the help level [1/2/3]:\n 
+level 1: help functions + minimal sceleton\n
+level 2: level 1 + detailed sceleton\n
+level 3: level 2 + partial implementaion\n""")
+        while (cmd not in [1,2,3]) :
+            print("Invalid level. Choose [1/2/3]")
+            cmd = input(">>> ").strip().lower()
+        print("Use the following code:\n")
+        print(res[f'final_attack_{cmd}'])
         exit() 
         ### Can add a check with server this is the correct message, for now it's obvious (player has to do recovered_plaintext.decode('utf-8') first)
 

@@ -92,6 +92,12 @@ def get_stage(player_id):
     res = {"stage" : game.curr_stage[player_id], "ip": game.ips[game.curr_stage[player_id]], "port": game.ports[game.curr_stage[player_id]]}
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
+        with open(f"./the_attack/attack_level_1", "rb") as f:
+            res['final_attack_1'] = f.read()
+        with open(f"./the_attack/attack_level_2", "rb") as f:
+            res['final_attack_2'] = f.read()
+        with open(f"./the_attack/attack_level_3", "rb") as f:
+            res['final_attack_3'] = f.read()
     return jsonify(res)    
 
 def generate_cyphers(private_key, count=game.cyphers_num):
