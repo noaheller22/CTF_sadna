@@ -65,12 +65,20 @@ Choose the help level [1/2/3]:\n
 level 1: help functions + minimal sceleton\n
 level 2: level 1 + detailed sceleton\n
 level 3: level 2 + partial implementaion\n""")
-        cmd = input(">>> ").strip().lower()
-        while (cmd not in ['1','2','3']) :
-            print("Invalid level. Choose [1/2/3]")
+        while True : 
+            print("Choose your level:")
             cmd = input(">>> ").strip().lower()
-        print("Use the following code:\n")
-        print(res[f'final_attack_{cmd}'])
+            if cmd not in ['1','2','3'] :
+                print("Invalid level. Choose [1/2/3]")
+            else : 
+                print("Use the following code:\n")
+                print(res[f'final_attack_{cmd}'])
+                print("Would you like to change level? [y/n]")
+                cmd = input(">>> ").strip().lower()
+                if cmd == 'n' :
+                    break
+        print(f"""We guess you solved our CTF. If you got the right answer, trust us - you'll know.\n
+Goodbye!""")
         exit() 
         ### Can add a check with server this is the correct message, for now it's obvious (player has to do recovered_plaintext.decode('utf-8') first)
 
