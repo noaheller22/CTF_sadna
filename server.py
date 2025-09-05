@@ -28,14 +28,14 @@ class ctf_server() :
             4 : "hint5", ## stage4 oracle
             5 : "hint6"  ## master oracle (needs hint?)
         }
-        self.curr_stage = {}  
+        self.curr_stage = {"alice" : 5}  
         self.ports = {
             0 : 0,  ## stage0 oracle
             1 : 1,  ## stage1 oracle
             2 : 2,  ## stage2 oracle
             3 : 3244,  ## stage3 oracle
             4 : 4,  ## stage4 oracle
-            5 : 5   ## master oracle
+            5 : 5001   ## master oracle
         }
         self.ips = {
             0 : 6,  ## stage0 oracle
@@ -43,7 +43,16 @@ class ctf_server() :
             2 : 8,  ## stage2 oracle
             3 : '192.168.1.137',  ## stage3 oracle
             4 : 10, ## stage4 oracle
-            5 : 11, ## master oracle
+            5 : 'nova.cs.tau.ac.il', ## master oracle
+        }
+
+        self.URLs = {
+            0 : "https://" ,
+            1 : "https://" ,
+            2 : "https://" ,
+            3 : "https://" ,
+            4 : "https://" ,
+            5 : "http://nova.cs.tau.ac.il:5001"
         }
 
 app = Flask(__name__)
@@ -108,12 +117,24 @@ def generate_cyphers(private_key, count=game.cyphers_num):
     cyphers_b64 = [base64.b64encode(c).decode('utf-8') for c in cyphers]
     return cyphers_b64
 
+
 def gen_master_message(player_id):
+    """
+    Encrypts the master message for a given player and returns a copyable Base64 string.
+    """
+    # Get the public key for the current stage of the player
     public_key = game.stages_keys[game.curr_stage[player_id]].publickey()
+    
+    # Create cipher object
     cipher = PKCS1_v1_5.new(public_key)
-    enc_message = cipher.encrypt(game.master_message.encode('utf-8'))
-    enc_message_b64 = base64.b64encode(enc_message).decode('utf-8')
-    return enc_message_b64
+    
+    # Encrypt the master message (UTF-8 encoded)
+    enc_bytes = cipher.encrypt(game.master_message.encode('ascii'))
+    
+    # Encode the ciphertext in Base64 (ASCII safe) for copy/paste
+    enc_b64 = base64.b64encode(enc_bytes).decode('ascii')
+    
+    return enc_b64
 
 
 if __name__ == "__main__":

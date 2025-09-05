@@ -9,7 +9,7 @@ PLAYER_ID = "alice"
 class CTF () :
     def __init__(self):  
         self.stage = 0
-        self.MASTER_ORACLE = 2
+        self.MASTER_ORACLE = 5
 
     def get_stage(self) :
         res = requests.get(f"{BACKEND_URL}/get_stage/{PLAYER_ID}").json()
