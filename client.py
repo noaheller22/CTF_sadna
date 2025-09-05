@@ -65,6 +65,7 @@ Choose the help level [1/2/3]:\n
 level 1: help functions + minimal sceleton\n
 level 2: level 1 + detailed sceleton\n
 level 3: level 2 + partial implementaion\n""")
+        cmd = input(">>> ").strip().lower()
         while (cmd not in [1,2,3]) :
             print("Invalid level. Choose [1/2/3]")
             cmd = input(">>> ").strip().lower()
