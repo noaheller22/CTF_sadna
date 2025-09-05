@@ -26,33 +26,17 @@ class ctf_server() :
             2 : "hint3", ## stage2 oracle
             3 : "hint4", ## stage3 oracle
             4 : "hint5", ## stage4 oracle
-            5 : "hint6"  ## master oracle (needs hint?)
+            5 : "hint6"  ## master oracle
         }
-        self.curr_stage = {"alice" : 5}  
-        self.ports = {
-            0 : 0,  ## stage0 oracle
-            1 : 1,  ## stage1 oracle
-            2 : 2,  ## stage2 oracle
-            3 : 3244,  ## stage3 oracle
-            4 : 4,  ## stage4 oracle
-            5 : 5001   ## master oracle
-        }
-        self.ips = {
-            0 : 6,  ## stage0 oracle
-            1 : 7,  ## stage1 oracle
-            2 : 8,  ## stage2 oracle
-            3 : '192.168.1.137',  ## stage3 oracle
-            4 : 10, ## stage4 oracle
-            5 : 'nova.cs.tau.ac.il', ## master oracle
-        }
+        self.curr_stage = {}  
 
         self.URLs = {
-            0 : "https://" ,
-            1 : "https://" ,
-            2 : "https://" ,
-            3 : "https://" ,
-            4 : "https://" ,
-            5 : "http://nova.cs.tau.ac.il:5001"
+            0 : "http://nova.cs.tau.ac.il:5001" ,
+            1 : "http://nova.cs.tau.ac.il:5002" ,
+            2 : "http://nova.cs.tau.ac.il:5003" ,
+            3 : "http://nova.cs.tau.ac.il:5004" ,
+            4 : "http://nova.cs.tau.ac.il:5005" ,
+            5 : "http://nova.cs.tau.ac.il:5006/oracle"
         }
 
 app = Flask(__name__)
@@ -67,7 +51,7 @@ def submit(player_id):
     guesses = request.json.get("guesses")
     if guesses == answers:
         game.curr_stage[player_id] +=1
-        return jsonify({"result": "passed", "next_stage_ip": game.ips[game.curr_stage[player_id]], "next_stage_port": game.ports[game.curr_stage[player_id]]})
+        return jsonify({"result": "passed", "next_stage_URL": game.URLs[game.curr_stage[player_id]]}, "public_key": game.stage_keys[game.curr_stage[[player_id]].publickey())
     return jsonify({"result": "fail"})
 
 @app.route("/get_hint/<player_id>", methods=["GET"])
@@ -89,21 +73,12 @@ def get_cyphers(player_id):
 def get_stage(player_id):
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
-    res = {"stage" : game.curr_stage[player_id], "ip": game.ips[game.curr_stage[player_id]], "port": game.ports[game.curr_stage[player_id]]}
+    res = {"stage" : game.curr_stage[player_id], "URL": game.URLs[game.curr_stage[player_id]], "public_key" : game.stages_keys[game.curr_stage[player_id]].publickey()}
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
-        with open("./the_attack/attack_level_1.py", "r", encoding="utf-8") as f:
-            #file_bytes = f.read()
-            #res['final_attack_1'] = base64.b64encode(file_bytes).decode('ascii')
-            res['final_attack_1'] = f.read() 
-        with open("./the_attack/attack_level_2.py", "r", encoding="utf-8") as f:
-            #file_bytes = f.read()
-            #res['final_attack_2'] = base64.b64encode(file_bytes).decode('ascii')
-            res['final_attack_2'] = f.read()
-        with open("./the_attack/attack_level_3.py", "r", encoding="utf-8") as f:
-            #file_bytes = f.read()
-            #res['final_attack_3'] = base64.b64encode(file_bytes).decode('ascii')
-            res['final_attack_3'] = f.read()
+        for i in range(1,4) :
+        with open(f"./the_attack/attack_level_{i}.py", "r", encoding="utf-8") as f:
+            res['final_attack_{i}'] = f.read() 
     return jsonify(res)
 
 def generate_cyphers(private_key, count=game.cyphers_num):
@@ -122,8 +97,13 @@ def generate_cyphers(private_key, count=game.cyphers_num):
         else:
             answers.append(False)
             # Generate invalid ciphertext by random bytes in modulus size
-            invalid_num = random.randint(0, private_key.n - 1)
-            invalid_cypher = long_to_bytes(invalid_num, key_size_bytes)
+            is_valid = True
+            while is_valid : ##Make sure cypher is not "accidentaly" valid 
+                invalid_num = random.randint(0, private_key.n - 1)
+                invalid_cypher = long_to_bytes(invalid_num, key_size_bytes)
+                cipher = PKCS1_v1_5.new(private_key)
+                cipher.decrypt(invalid_cypher, None)
+                is_valid = result != b''
             cyphers.append(invalid_cypher)
     print("answers are", answers) ## for easy debugging
     cyphers_b64 = [base64.b64encode(c).decode('utf-8') for c in cyphers]

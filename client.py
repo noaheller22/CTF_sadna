@@ -13,7 +13,7 @@ class CTF () :
 
     def get_stage(self) :
         res = requests.get(f"{BACKEND_URL}/get_stage/{PLAYER_ID}").json()
-        return res['stage'], res['ip'] , res['port']
+        return res['stage'], res['URL'], res['public_key']
     
     def get_hint(self) :
         res = requests.get(f"{BACKEND_URL}/get_hint/{PLAYER_ID}").json()
@@ -46,7 +46,9 @@ class CTF () :
                 print(f"Stage passed!")
                 self.stage +=1
                 if self.stage != game.MASTER_ORACLE :
-                    print(f"Access next stage with ip {data['next_stage_ip']} and port {data['next_stage_port']}")
+                    print(f"Access next stage with URL {data['next_stage_URL']}")
+                    print(f"The server's public key is: \n")
+                    print(data['public_key'])
             else:
                 print("Stage failed. You lost.")
                 exit()
@@ -58,7 +60,8 @@ class CTF () :
             exit()
         print(f"""************ \nThis is your chance to prove your worth.\n
 Prepare your bleichenbacher attack, and attack using the master oracle!\n
-ip: {res['ip']} port: {res['port']}\n 
+URL: {res['URL']}\n 
+Public Key: {res['public_key']}\n
 Decipher the following message by completing the given attack.\n
 The message: \n{res['master_message']}
 Choose the help level [1/2/3]:\n 
@@ -73,10 +76,6 @@ level 3: level 2 + partial implementaion\n""")
             else : 
                 print("Use the following code:\n")
                 print(res[f'final_attack_{cmd}'])
-                #code = res[f'final_attack_{cmd}']
-                #file_bytes = base64.b64decode(code)
-                #file_code = file_bytes.decode('utf-8', errors='replace')
-                #print(file_code)
                 print("Would you like to change level? [y/n]")
                 cmd = input(">>> ").strip().lower()
                 if cmd == 'n' :
@@ -95,17 +94,17 @@ Goodbye!""")
 game = CTF()
 
 def main():
-    stage, ip, port = game.get_stage()
+    stage, URL, public_key = game.get_stage()
     game.stage = stage
     if stage == 0:
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
-        print(f"Welcome back! you are in stage {stage}, ip: {ip}, port: {port}")
+        print(f"Welcome back! you are in stage {stage}, URL: {URL}")
         main_menu()
     command = input(">>> ").strip()
     if command.lower() == 'y' :
         print(f"""Great! lets Start. The first server you need to defeat is:
-ip: {ip} port: {port}""")
+URL: {URL} \nPublic Key: {public_key}""")
         main_menu()
 
 def main_menu():
