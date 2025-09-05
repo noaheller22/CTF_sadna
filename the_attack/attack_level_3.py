@@ -1,13 +1,39 @@
 import requests
 import base64
 from Crypto.PublicKey import RSA
+###OPTIONAL ###
+from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
+###############
 
-ORACLE_PATH        = "http://localhost:5000/oracle"
-PUBLIC_KEY_PATH    = "public.pem"
-SECRET_CIPHER_PATH = "secret_cipher.bin" #should be .bin file
+ORACLE_PATH        = "" # put the oracle path server gives you
+PUBLIC_KEY_PATH    = "" # create .pem file from the key the server gives you
+SECRET_CIPHER_PATH = "" # create .bin file from the cipher the server gives you
 CIPHER_LENGTH      = 1024
-
 s_list = []
+
+###OPTIONAL ###
+def compute_ciphertexts_parallel(c0, rsa_key, s_list, max_workers=NUM_CORES):
+    """
+    Computes [(c0 * s^e mod n) for s in s_list] in parallel using multiple cores.
+
+    Inputs:
+        c0          : Blinded ciphertext as int
+        rsa_key     : RSA key object with (n, e)
+        s_list      : List of candidate s values
+        max_workers : Number of parallel threads
+
+    Output:
+        List of ciphertexts corresponding to each s in s_list
+    """
+    def compute_ciphertext(si):
+        return ???
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        return list(executor.map(compute_ciphertext, s_list))
+
+###############
+
 
 def egcd(a, b):
     """
@@ -72,7 +98,24 @@ def query_the_oracle(ciphertext, k):
         print(ciphertext)
         print("k:")
         print(k)
-    
+ 
+ def query_oracle_batch(ciphertexts, k):
+    """
+    Sends a batch of ciphertexts to the oracle.
+    Inputs: ciphertexts = list of ints, k = length of cipher in bytes.
+    Output: list of booleans corresponding to each ciphertext.
+    """
+    b64_ciphertexts = [
+        base64.b64encode(c.to_bytes(k, byteorder='big')).decode()
+        for c in ciphertexts
+    ]
+
+    response = requests.post(ORACLE_PATH, json={"ciphertexts": b64_ciphertexts})
+    if response.status_code == 200:
+        return response.json()["valid_list"]
+    else:
+        print("Error occurred reaching the oracle (batch)")
+        return [False] * len(ciphertexts)   
 
 def load_public_key():
     """
@@ -142,6 +185,37 @@ def find_min_conforming(k, rsa_key, c0, start_s):
         s += 1
 
 
+def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=500, max_workers=NUM_CORES):
+    """
+    Finds the smallest 's' such that the modified ciphertext is PKCS#1 v1.5 conforming.
+
+    Uses batching to reduce oracle overhead and parallel computation for RSA.
+
+    Inputs:
+        k          : RSA modulus length in bytes
+        rsa_key    : RSA key object with (n, e)
+        c0         : Initial ciphertext as an int (c0 = c * s0^e mod n)
+        start_s    : Starting value of s to search from
+        batch_size : Number of candidates to send to oracle per request
+        max_workers: Number of parallel workers for computing s^e mod n
+
+    Output:
+        s : The smallest integer >= start_s such that oracle((c0 * s^e mod n)) is True
+    """
+    s = start_s
+
+    while True:
+        candidates = ???
+        ciphertexts = ???
+        results = ???
+
+        # Check which (if any) succeeded
+        for si, res in zip(candidates, results):
+            if res:
+                return si
+
+        s += batch_size
+
 def search_single_interval(k, rsa_key, B, prev_s, a, b, c0):
     """
     Searches for the next valid 's' when only one interval remains.
@@ -167,6 +241,41 @@ def search_single_interval(k, rsa_key, B, prev_s, a, b, c0):
             c_temp = ???
             if query_the_oracle(c_temp, k):
                 return s
+        r += 1
+
+def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch_size=500, max_workers=NUM_CORES):
+    """
+    Searches for the next valid 's' when only one interval remains.
+
+    Uses batching and parallel computation to minimize oracle queries.
+
+    Inputs:
+        k          : RSA modulus length in bytes
+        rsa_key    : RSA key object with (n, e)
+        B          : Boundary constant = 2^(8 * (k - 2))
+        prev_s     : Previous 's' value
+        a, b       : Bounds of the remaining interval
+        c0         : Blinded ciphertext (c0 = c * s0^e mod n)
+        batch_size : Number of candidates to query per request
+        max_workers: Number of parallel threads for RSA computation
+
+    Output:
+        s : A new 's' ≥ prev_s such that oracle((c0 * s^e mod n)) is True
+    """
+    r = ???
+    while True:
+        lower = ???
+        upper = ???
+        s = lower
+        while s <= upper:
+            candidates = ???
+            ciphertexts = ???
+            results = ???
+            for si, res in zip(candidates, results):
+                if res:
+                    return si
+            s += batch_size
+
         r += 1
 
 def narrow_m(rsa_key, prev_intervals, s, B):
@@ -212,13 +321,13 @@ def bleichenbacher_attack(pub_key, k, secret_c, verbose=False):
         if verbose:
             print("Round ", i)
         if i == 1:
-            s = find_min_conforming(k, pub_key, c_0, ???)
+            s = find_min_conforming(k, pub_key, c_0, ???) #or parallel
         elif len(m) > 1:
-            s = find_min_conforming(k, pub_key, c_0, ???)
+            s = find_min_conforming(k, pub_key, c_0, ???) #or parallel
         else:
             a = ???
             b = ???
-            s = search_single_interval(k, pub_key, B, s, a, b, c_0)
+            s = search_single_interval(k, pub_key, B, s, a, b, c_0) #or parallel
 
         m = narrow_m(pub_key, m, s, B)
 
