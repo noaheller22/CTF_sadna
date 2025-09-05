@@ -169,13 +169,13 @@ def find_min_conforming(k, rsa_key, c0, start_s):
     """
     Finds the smallest 's' such that the modified ciphertext is PKCS#1 v1.5 conforming.
 
-    Iterates s ≥ start_s until (c0 * s^e mod n) passes the oracle check.
+    Iterates s >= start_s until (c0 * s^e mod n) passes the oracle check.
 
     Inputs : k       : RSA modulus length in bytes.
              rsa_key : RSA key object with (n, e).
              c0      : The initial ciphertext as an integer (c0 = (c * s0^e mod n)).
              start_s : Starting value of s to search from.
-    Output : s       :The smallest integer s ≥ start_s such that oracle((c0 * s^e) mod n) is True.
+    Output : s       :The smallest integer s >= start_s such that oracle((c0 * s^e) mod n) is True.
     """
     s = start_s
     while True:
@@ -230,7 +230,7 @@ def search_single_interval(k, rsa_key, B, prev_s, a, b, c0):
              a       : Lower bound of the remaining interval.
              b       : Upper bound of the remaining interval.
              c0      : Blinded ciphertext (c0 = c * s0^e mod n).
-    Output : s       : A new s ≥ prev_s such that oracle((c0 * s^e) mod n) returns True.
+    Output : s       : A new s >= prev_s such that oracle((c0 * s^e) mod n) returns True.
     """
 
     r = ???
@@ -260,7 +260,7 @@ def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch
         max_workers: Number of parallel threads for RSA computation
 
     Output:
-        s : A new 's' ≥ prev_s such that oracle((c0 * s^e mod n)) is True
+        s : A new 's' >= prev_s such that oracle((c0 * s^e mod n)) is True
     """
     r = ???
     while True:
