@@ -95,8 +95,9 @@ def get_stage(player_id):
         with open("./the_attack/attack_level_1.py", "rb") as f:
             file_bytes = f.read()
             res['final_attack_1'] = base64.b64encode(file_bytes).decode('ascii')
-        with open("./the_attack/attack_level_2.py", "r", encoding="utf-8") as f:
-            res['final_attack_2'] = f.read()
+        with open("./the_attack/attack_level_2.py", "rb") as f:
+            file_bytes = f.read()
+            res['final_attack_2'] = base64.b64encode(file_bytes).decode('ascii')
         with open("./the_attack/attack_level_3.py", "rb") as f:
             file_bytes = f.read()
             res['final_attack_3'] = base64.b64encode(file_bytes).decode('ascii')
