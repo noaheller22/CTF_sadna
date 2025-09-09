@@ -5,11 +5,9 @@
     * For the timing server we will use port 4434
 
 # Setting up and Running the servers:
-    * Go into the folder of the server you want to run.
-        1. Run chmod +x setup_vuln_openssl.sh and chmod +x run_vuln_server.sh
-        2. Run ./setup_vuln_openssl.sh
-    * For each server start by running setup_vuln_openssl.sh for set up
-    * After running the setup script run:
-        1. To run the err msg server - "~/openssl-0.9.6/apps/openssl s_server -accept 4433 -key ~/CTF_sadna/open-sll-servers/err-msg/private_1024.pem -cert ~/CTF_sadna/open-sll-servers/err-msg/server.crt -ssl2"
-        2. To run the timing server - "~/openssl-1.0.1f/apps/openssl s_server -accept 4434 -key ~/CTF_sadna/open-sll-servers/timing/private_1024.pem -cert ~/CTF_sadna/open-sll-servers/timing/server.crt
-"
+    * Go into the folder of the server you want to run. (The updated versions are the folders: Timing-Vulnerability and Error-Message Vulnerability)
+       1. Notice that this folder contains the openSSL server as well.
+       2. Each folder contains: A skeleton oracle (will be given to the player),the oracle solution and the our server.
+       2. In this folder run the server - when on Nova.
+       3. On your local PC you can run the skeleton or full oracle -  make sure the port in the script matches the server and you are using Nova's IP.
+       4. There is also a clues folder containing different levels of clues.
