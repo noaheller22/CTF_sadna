@@ -3,6 +3,9 @@ import time
 from collections import defaultdict
 
 
+DRAM_SIZE = 16_384
+
+
 class CacheLine:
   def __init__(self, lines_amount: int):
     self._lines_amount = lines_amount
@@ -23,19 +26,29 @@ class Cache:
   CACHE_SIZE = CACHE_LINE_SIZE * CACHE_ASSOCIATIVITY * CACHE_NUM_SETS
 
   # Timing Config
-  DRAM_TO_CACHE_TIME = 50
+  DRAM_TO_CACHE_ACCESS_TIME_RATIO = 50
   CACHE_HIT_TIME = 0.0001
-  CACHE_MISS_TIME = CACHE_HIT_TIME * DRAM_TO_CACHE_TIME
+  CACHE_MISS_TIME = CACHE_HIT_TIME * DRAM_TO_CACHE_ACCESS_TIME_RATIO
 
   # Function Config
-  FUNCTION_SIZE = 16
+  FUNCTION_SIZE = 1024
   FUNCTION_POINTER = random.randint(0, CACHE_SIZE - FUNCTION_SIZE - 1)
 
   def __init__(self):
-    self.cache: dict[int, CacheLine] = defaultdict(CacheLine(self.CACHE_ASSOCIATIVITY))
+    self.cache: dict[int, CacheLine] = defaultdict(self._create_cache_line)
+  
+  def _create_cache_line(self) -> CacheLine:
+     return CacheLine(self.CACHE_ASSOCIATIVITY)
 
   def get_cache_configuration(self) -> dict[str, int]:
-      return {"line": self.CACHE_LINE_SIZE, "sets": self.CACHE_NUM_SETS, "associativity": self.CACHE_ASSOCIATIVITY}
+      return {
+         "associativity": self.CACHE_ASSOCIATIVITY,
+         "function_pointer": self.FUNCTION_POINTER,
+         "function_size": self.FUNCTION_SIZE,
+         "line": self.CACHE_LINE_SIZE,
+         "sets": self.CACHE_NUM_SETS,
+         "dram_size": DRAM_SIZE,
+      }
 
   def _get_cache_address(self, dram_address: int) -> int:
       return (dram_address // self.CACHE_LINE_SIZE) % self.CACHE_NUM_SETS
@@ -45,12 +58,11 @@ class Cache:
       return self.cache[cache_address]
 
   def reset_cache(self) -> None:
-      self.cache = defaultdict(CacheLine(self.CACHE_ASSOCIATIVITY))
+      self.cache = defaultdict(self._create_cache_line)
 
   def cache_changing_function(self) -> None:
       for dram_address in range(self.FUNCTION_POINTER, self.FUNCTION_POINTER + self.FUNCTION_SIZE):
-          cache_lines = self._get_cache_lines(dram_address)
-          cache_lines.append(dram_address)
+          self.probe(dram_address)
 
   def prime(self, dram_address: int) -> None:
       cache_lines = self._get_cache_lines(dram_address)

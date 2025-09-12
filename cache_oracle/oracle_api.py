@@ -4,11 +4,15 @@ from flask import Flask, request, jsonify
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-from cache_functions import Cache
+from cache import Cache
+
+
+PRIVATE_KEY_PATH = "private.pem"
+OPEN_PORT = 5005
 
 
 # Setup
-with open("private.pem", "rb") as key_file:
+with open(PRIVATE_KEY_PATH, "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
 
 cipher = PKCS1_v1_5.new(private_key)
@@ -23,7 +27,7 @@ def config():
     return jsonify(cache_instance.get_cache_configuration())
 
 
-@app.route("/flash", methods=["POST"])
+@app.route("/flush", methods=["POST"])
 def flush():
     global cache_instance
     flush_notice = "Success"
@@ -41,26 +45,32 @@ def write():
     global cache_instance
     write_notice = "Granted"
 
+    addrs = request.json.get("addrs", [])
+
     try:
-       cache_instance.prime(int(request.args.get("addr")))
+        for addr in addrs:
+            cache_instance.prime(int(addr))
     
     except ValueError:
-        write_notice = "Errored - address must be an int"
+        write_notice = "Errored - addresses must be an ints"
     except IndexError:
-        write_notice = "Errored - address must be inside the DRAM"
+        write_notice = "Errored - addresses must be inside the DRAM"
     except Exception:
         write = "Errored"
 
     return jsonify({"Write": write_notice})
 
 
-@app.route("/read", methods=["GET"])
+@app.route("/read", methods=["POST"])
 def read():
     global cache_instance
     read_notice = "Granted"
 
+    addrs = request.json.get("addrs", [])
+
     try:
-        cache_instance.probe(int(request.args.get("addr")))
+        for addr in addrs:
+            cache_instance.probe(int(addr))
     
     except ValueError:
         read_notice = "Errored - address must be an int"
@@ -78,23 +88,23 @@ def oracle():
 
     try:
         data = request.get_json()
-        b64_ciphertext = data.get("ciphertext")
-        if b64_ciphertext is None:
-            return jsonify({"error": "Missing 'ciphertext'"}), 400
+        ciphertext = data.get("ciphertext")
+        if ciphertext is None:
+            return jsonify(error="Missing 'ciphertext'"), 400
 
-        ciphertext = base64.b64decode(b64_ciphertext)
-        result = cipher.decrypt(ciphertext, None)
+        b64_ciphertext = base64.b64decode(ciphertext)
+        result = cipher.decrypt(b64_ciphertext, None)
 
         is_valid = result != b''
         
         if is_valid:
             cache_instance.cache_changing_function()
 
-        return jsonify({"request accepted"})
+        return jsonify("request accepted")
 
     except Exception as e:
-        return jsonify({"error": "an error has accured"}), 500
+        return jsonify({"error": f"an error has accured: {e}"}), 500
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3244)
+    app.run(host="0.0.0.0", port=OPEN_PORT)

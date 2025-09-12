@@ -1,90 +1,112 @@
 import time
+import random
 import requests
 
+from typing import Iterable
 
-SERVER = "http://127.0.0.1:5000"
+
+SERVER = "http://127.0.0.1:5005"
 NUM_CANDIDATES = 200
 ADDRESS_SIZE_BYTES = 8  # explicit and clear
-TIME_THRESHOLD = 0.0001 * 30
+TIME_THRESHOLD = 0.0001 * 20
+EVICTION_SUPERSET_SIZE_FACTOR = 5
 
 
-def probe(addr):
-    r = requests.get(f"{SERVER}/read", params={"addr": addr})
-    return r.json()["time"]
+class CacheConfig:
+    def __init__(self, cache_config: dict[str, int]):
+        self.associativity = cache_config["associativity"]
+        self.function_address = cache_config["function_pointer"]
+        self.function_size = cache_config["function_size"]
+        self.line_length = cache_config["line"]
+        self.sets_number = cache_config["sets"]
+        self.dram_size = cache_config["dram_size"]
+        self.function_lines = self.function_size // self.line_length
 
 
-def prime(addr):
-    requests.post(f"{SERVER}/write", json={"addr": addr})
+def read(addrs: list[int]):
+    r = requests.post(f"{SERVER}/read", json={"addrs": addrs})
+    return r.json()
+
+
+def write(addrs: list[int]):
+    requests.post(f"{SERVER}/write", json={"addrs": addrs})
 
 
 def flush():
     requests.post(f"{SERVER}/flush")
 
 
-def generate_aligned_addresses(amount: int, alignment: int) -> list[int]:
-    base = 0x100000
-    return [base + i * alignment for i in range(amount)]
-
-
-def measure_time(addr: int) -> float:
+def measure_access_function(cache_config: CacheConfig) -> float:
     start = time.perf_counter()
-    requests.get(f"{SERVER}/read", params={"addr": addr})
-    return time.perf_counter() - start
+    read([addr for addr in range(cache_config.function_address, cache_config.function_address + cache_config.function_size)])
+    return (time.perf_counter() - start) / cache_config.function_size
 
 
-def build_eviction_function_set(target_address: int, candidates: list[int], cache_associativity: int, threshold: float = 0.001):
-    eviction_set = []
+def is_set_evicting(eviction_set_candidate: set[int], cache_config: CacheConfig) -> bool:
+    write(list(eviction_set_candidate))
+    return measure_access_function(cache_config) < TIME_THRESHOLD
 
-    for candidate in candidates:
-        flush()
-        prime(candidate)
-        for evictor in eviction_set:
-            prime(evictor)
-        t1 = measure_time(target_address)
 
-        prime(candidate)
-        for evictor in eviction_set:
-            prime(evictor)
-        t2 = measure_time(target_address)
+def create_eviction_superset(cache_config: CacheConfig) -> set[int]:
+    superset_size = cache_config.function_lines * cache_config.associativity * EVICTION_SUPERSET_SIZE_FACTOR
+    superset_candidate = set(random.sample(range(cache_config.dram_size), superset_size))
 
-        if t2 - t1 > threshold:
-            eviction_set.append(candidate)
+    while not is_set_evicting(superset_candidate, cache_config):
+       superset_candidate = set(random.sample(range(cache_config.dram_size), superset_size))
 
-        if len(eviction_set) >= cache_associativity:
-            break
+    print("created superset")
+    return superset_candidate
 
+
+def build_function_eviction_set(cache_config: CacheConfig) -> list[int]:
+    eviction_set = create_eviction_superset(cache_config)
+    minimal_eviction_set_size = cache_config.associativity * cache_config.function_lines
+    partitions = minimal_eviction_set_size + 1
+
+    while len(eviction_set) > minimal_eviction_set_size:
+        eviction_list = list(eviction_set)
+        random.shuffle(eviction_list)
+        chunk_size = len(eviction_list) // partitions
+        subsets = [set(eviction_list[i * chunk_size:(i + 1) * chunk_size]) for i in range(partitions)]
+        
+        for subset in subsets:
+            eviction_set.difference_update(subset)
+            if is_set_evicting(eviction_set, cache_config):
+                break
+            else:
+                eviction_set.update(subset)
+    
+    print("found minimal eviction set")
     return eviction_set
 
 
-def bleichenbacher_oracle(ciphertext: bytes, eviction_set: list[int]) -> bool:
-    for addr in eviction_set:
-        prime(addr)
+def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_config: CacheConfig, use_flush: bool = False) -> bool:
+    if use_flush:
+        flush()
+    else:
+        write(list(eviction_set))
 
-    r = requests.post(f"{SERVER}/oracle", json={"ciphertext": ciphertext.hex()})
-    assert r.status_code == 200
-
-    probe_time = 0
-    for addr in eviction_set:
-        probe_time += measure_time(addr)
+    r = requests.post(f"{SERVER}/oracle", json={"ciphertext": ciphertext})
+    if r.status_code != 200:
+        print(r.json())
+        raise ValueError
     
-    avg_time = probe_time / len(eviction_set)
+    average_reload_time = measure_access_function(cache_config)
 
-    return avg_time > TIME_THRESHOLD
+    return average_reload_time < TIME_THRESHOLD
 
 
 def main():
-    cyphertexts = []
-    cache_config = requests.get(f"{SERVER}/config").json()
-    function_info = requests.get(f"{SERVER}/function").json()
+    cyphertexts = [
+        "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "zlFQJpaemhCmuONXmJ+JmsxdUv328UV/N3EQnFIlzy0OaYbagg/NIdKd8yClGQ8KYGE/kwynV6G+cAYR4Dfz+CUfHDooq2laQkS87rDtKvwsxNq/kOO3UqhsjtLgKrQTrfqIQMujbVlfAroZFsIUXCiaoHxNV8Uoiu2TXxnDk5k=",
+    ]
+    cache_config = CacheConfig(requests.get(f"{SERVER}/config").json())
+    eviction_set = build_function_eviction_set(cache_config)
 
-    cache_associativity = cache_config["associativity"]
-    cache_sets_number = cache_config["num_sets"]
-    line_size = cache_config["line_size"]
-    function_pointer = function_info["function_pointer"]
+    responses = [bleichenbacher_oracle(cyphertext, eviction_set, cache_config, use_flush=True) for cyphertext in cyphertexts]
+    print(responses)
 
-    candidates = generate_aligned_addresses(200, line_size)
-    target_set = (function_pointer // line_size) % cache_sets_number
-    same_set_candidates = [address for address in candidates if (address // line_size) % cache_sets_number == target_set]
-    eviction_set = build_eviction_function_set(function_pointer, same_set_candidates, cache_associativity)
 
-    responses = [bleichenbacher_oracle(cyphertext, eviction_set) for cyphertext in cyphertexts]
+if __name__ == "__main__":
+    main()
