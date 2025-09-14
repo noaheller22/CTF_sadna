@@ -1,4 +1,5 @@
 import base64
+import logging
 
 from flask import Flask, request, jsonify
 from Crypto.PublicKey import RSA
@@ -15,6 +16,8 @@ OPEN_PORT = 5005
 with open(PRIVATE_KEY_PATH, "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
 
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 cipher = PKCS1_v1_5.new(private_key)
 cache_instance = Cache()
 app = Flask(__name__)
@@ -85,7 +88,7 @@ def read():
 @app.route("/oracle", methods=["POST"])
 def oracle():
     global cache_instance
-
+    
     try:
         data = request.get_json()
         ciphertext = data.get("ciphertext")
