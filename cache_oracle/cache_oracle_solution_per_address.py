@@ -9,7 +9,7 @@ from requests import Session
 
 SERVER = "http://127.0.0.1:5005"
 NUM_CANDIDATES = 200
-ADDRESS_SIZE_BYTES = 8  # explicit and clear
+ADDRESS_SIZE_BYTES = 8
 EVICTION_SUPERSET_SIZE_FACTOR = 20
 CACHE_HIT_TIME = 0.0001
 
