@@ -7,6 +7,7 @@ from Crypto.Util.number import bytes_to_long, long_to_bytes
 import random 
 import os
 import base64
+from base64 import b64encode
 
 class ctf_server() :
     def __init__(self) :
@@ -73,12 +74,20 @@ def get_cyphers(player_id):
 def get_stage(player_id):
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
-    res = {"stage" : game.curr_stage[player_id], "URL": game.URLs[game.curr_stage[player_id]], "public_key" : game.stages_keys[game.curr_stage[player_id]].publickey()}
+
+    res = {
+    "stage": game.curr_stage[player_id],
+    "URL": game.URLs[game.curr_stage[player_id]],
+    "public_key": b64encode(
+        game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="DER")
+    ).decode()
+    }
+    #res = {"stage" : game.curr_stage[player_id], "URL": game.URLs[game.curr_stage[player_id]], "public_key" : game.stages_keys[game.curr_stage[player_id]].publickey()}
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
         for i in range(1,4) :
             with open(f"./the_attack/attack_level_{i}.py", "r", encoding="utf-8") as f:
-                res['final_attack_{i}'] = f.read() 
+                res[f'final_attack_{i}'] = f.read() 
     return jsonify(res)
 
 def generate_cyphers(private_key, count=game.cyphers_num):

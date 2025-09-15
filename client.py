@@ -94,10 +94,7 @@ Goodbye!""")
 game = CTF()
 
 def main():
-    res = game.get_stage()
-    stage = res['stage']
-    URL = res['URL']
-    public_key = res['public_key']
+    stage, URL, pub_key = game.get_stage()
     game.stage = stage
     if stage == 0:
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
