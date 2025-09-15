@@ -15,7 +15,7 @@ class ctf_server() :
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
-            j = 6 ## remove this and change j to i when all oracles are created
+            j = 4 ## remove this and change j to i when all oracles are created
             with open(f"private{j}.pem", "rb") as f:
                 self.stages_keys[i] = RSA.import_key(f.read())
         
@@ -35,7 +35,7 @@ class ctf_server() :
             1 : "http://nova.cs.tau.ac.il:5002" ,
             2 : "http://nova.cs.tau.ac.il:5003" ,
             3 : "http://nova.cs.tau.ac.il:5004" ,
-            4 : "http://nova.cs.tau.ac.il:5005" ,
+            4 : "http://nova.cs.tau.ac.il:5005/config, http://nova.cs.tau.ac.il:5005/write, http://nova.cs.tau.ac.il:5005/read, http://nova.cs.tau.ac.il:5005/oracle" ,
             5 : "http://nova.cs.tau.ac.il:5006/oracle"
         }
 
@@ -51,7 +51,7 @@ def submit(player_id):
     guesses = request.json.get("guesses")
     if guesses == answers:
         game.curr_stage[player_id] +=1
-        return jsonify({"result": "passed", "next_stage_URL": game.URLs[game.curr_stage[player_id]]}, "public_key": game.stage_keys[game.curr_stage[[player_id]].publickey())
+        return jsonify({"result": "passed", "next_stage_URL": game.URLs[game.curr_stage[player_id]], "public_key": game.stage_keys[game.curr_stage[player_id]].publickey()})
     return jsonify({"result": "fail"})
 
 @app.route("/get_hint/<player_id>", methods=["GET"])
@@ -77,8 +77,8 @@ def get_stage(player_id):
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
         for i in range(1,4) :
-        with open(f"./the_attack/attack_level_{i}.py", "r", encoding="utf-8") as f:
-            res['final_attack_{i}'] = f.read() 
+            with open(f"./the_attack/attack_level_{i}.py", "r", encoding="utf-8") as f:
+                res['final_attack_{i}'] = f.read() 
     return jsonify(res)
 
 def generate_cyphers(private_key, count=game.cyphers_num):
