@@ -12,7 +12,7 @@ from base64 import b64encode
 class ctf_server() :
     def __init__(self) :
         self.MASTER_ORACLE = 5
-        self.cyphers_num = 2
+        self.ciphers_num = 2
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
@@ -68,13 +68,13 @@ def get_hint(player_id):
         game.curr_stage[player_id] = 0
     return jsonify({"hint": game.stages_hints[game.curr_stage[player_id]]})
 
-@app.route("/get_cyphers/<player_id>", methods=["GET"])
-def get_cyphers(player_id):
+@app.route("/get_ciphers/<player_id>", methods=["GET"])
+def get_ciphers(player_id):
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
-    cyphers = generate_cyphers(game.stages_keys[game.curr_stage[player_id]])
-    print("sending cyphers")
-    return jsonify({"cyphers": cyphers})
+    ciphers = generate_ciphers(game.stages_keys[game.curr_stage[player_id]])
+    print("sending ciphers")
+    return jsonify({"ciphers": ciphers})
 
 @app.route("/get_stage/<player_id>", methods=["GET"])
 def get_stage(player_id):
@@ -96,10 +96,10 @@ def get_stage(player_id):
                 res[f'final_attack_{i}'] = f.read() 
     return jsonify(res)
 
-def generate_cyphers(private_key, count=game.cyphers_num):
+def generate_ciphers(private_key, count=game.ciphers_num):
     cipher = PKCS1_v1_5.new(private_key.publickey())
     key_size_bytes = private_key.size_in_bytes()
-    cyphers = []
+    ciphers = []
     global answers
     answers = []
     for _ in range(count):
@@ -107,23 +107,22 @@ def generate_cyphers(private_key, count=game.cyphers_num):
             # Generate valid ciphertext by encrypting random plaintext with correct padding
             answers.append(True)
             plaintext = os.urandom(key_size_bytes - 11)  # PKCS#1 v1.5 padding overhead is 11 bytes
-            valid_cypher = cipher.encrypt(plaintext)
-            cyphers.append(valid_cypher)
+            valid_cipher = cipher.encrypt(plaintext)
+            ciphers.append(valid_cipher)
         else:
             answers.append(False)
             # Generate invalid ciphertext by random bytes in modulus size
             is_valid = True
-            while is_valid : ##Make sure cypher is not "accidentaly" valid 
+            while is_valid : ##Make sure cipher is not "accidentaly" valid 
                 invalid_num = random.randint(0, private_key.n - 1)
-                invalid_cypher = long_to_bytes(invalid_num, key_size_bytes)
+                invalid_cipher = long_to_bytes(invalid_num, key_size_bytes)
                 cipher = PKCS1_v1_5.new(private_key)
-                result = cipher.decrypt(invalid_cypher, None)
+                result = cipher.decrypt(invalid_cipher, None)
                 is_valid = result != b''
-            cyphers.append(invalid_cypher)
+            ciphers.append(invalid_cipher)
     print("answers are", answers) ## for easy debugging
-    #cyphers_b64 = [base64.b64encode(c).decode('utf-8') for c in cyphers]
-    cyphers_b64 = [base64.b64encode(ciphertext).decode() for ciphertext in cyphers]
-    return cyphers_b64
+    ciphers_b64 = [base64.b64encode(ciphertext).decode() for ciphertext in ciphers]
+    return ciphers_b64
 
 
 def gen_master_message(player_id):

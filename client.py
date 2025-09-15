@@ -5,7 +5,7 @@ import base64
 
 BACKEND_URL = "http://nova.cs.tau.ac.il:5000"
 PLAYER_ID = "alice"  
-### For now cyphers are printed to terminal. Might need to change to writing to file
+### For now ciphers are printed to terminal. Might need to change to writing to file
 class CTF () :
     def __init__(self):  
         self.stage = 0
@@ -22,12 +22,12 @@ class CTF () :
     def test_oracle(self) :
             print("You are going to be presented with a number of ciphers. \n"\
             "For each one, decide whether the cipher has valid padding or not based on your oracle.")
-            cyphers = self.get_cyphers()
+            ciphers = self.get_ciphers()
             guesses = []
             i = 0
-            while i < len(cyphers) :
-                cypher = cyphers[i]
-                print(f"Does this cipher have valid padding? Reply [y\\n]:\n",cypher)
+            while i < len(ciphers) :
+                cipher = ciphers[i]
+                print(f"Does this cipher have valid padding? Reply [y\\n]:\n",cipher)
                 cmd = input(">>> ").strip().lower()
                 if cmd == 'y' : 
                     i +=1
@@ -39,9 +39,9 @@ class CTF () :
                     print("Not a valid charachter. Lets try again:")
                 guesses.append(guess)
             res = requests.post(f"{BACKEND_URL}/submit/{PLAYER_ID}", json={"guesses": guesses})
-            print("guesses are ", guesses) 
+            print("guesses are", guesses) 
             data = res.json()
-            print("resuls are ", data['result'])
+            print("resutls are", data['result'])
             if data["result"] == "passed":
                 print(f"Stage passed!")
                 self.stage +=1
@@ -85,11 +85,9 @@ Goodbye!""")
         exit() 
         ### Can add a check with server this is the correct message, for now it's obvious (player has to do recovered_plaintext.decode('utf-8') first)
 
-    def get_cyphers(self) :
-        res = requests.get(f"{BACKEND_URL}/get_cyphers/{PLAYER_ID}").json()
-        decoded_cyphers = [base64.b64decode(c) for c in res['cyphers']]
-        #return decoded_cyphers
-        return res['cyphers']
+    def get_ciphers(self) :
+        res = requests.get(f"{BACKEND_URL}/get_ciphers/{PLAYER_ID}").json()
+        return res['ciphers']
 
 
 game = CTF()
