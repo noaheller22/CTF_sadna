@@ -88,7 +88,8 @@ Goodbye!""")
     def get_cyphers(self) :
         res = requests.get(f"{BACKEND_URL}/get_cyphers/{PLAYER_ID}").json()
         decoded_cyphers = [base64.b64decode(c) for c in res['cyphers']]
-        return decoded_cyphers
+        #return decoded_cyphers
+        return res['cyphers']
 
 
 game = CTF()

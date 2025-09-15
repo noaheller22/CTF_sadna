@@ -52,7 +52,13 @@ def submit(player_id):
     guesses = request.json.get("guesses")
     if guesses == answers:
         game.curr_stage[player_id] +=1
-        return jsonify({"result": "passed", "next_stage_URL": game.URLs[game.curr_stage[player_id]], "public_key": game.stage_keys[game.curr_stage[player_id]].publickey()})
+        next_key = game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="DER")
+        res = {
+            "result": "passed",     
+            "next_stage_URL": game.URLs[game.curr_stage[player_id]], 
+            "public_key": b64encode(next_key).decode()
+        }
+        return jsonify(res)
     return jsonify({"result": "fail"})
 
 @app.route("/get_hint/<player_id>", methods=["GET"])
@@ -111,11 +117,12 @@ def generate_cyphers(private_key, count=game.cyphers_num):
                 invalid_num = random.randint(0, private_key.n - 1)
                 invalid_cypher = long_to_bytes(invalid_num, key_size_bytes)
                 cipher = PKCS1_v1_5.new(private_key)
-                cipher.decrypt(invalid_cypher, None)
+                result = cipher.decrypt(invalid_cypher, None)
                 is_valid = result != b''
             cyphers.append(invalid_cypher)
     print("answers are", answers) ## for easy debugging
-    cyphers_b64 = [base64.b64encode(c).decode('utf-8') for c in cyphers]
+    #cyphers_b64 = [base64.b64encode(c).decode('utf-8') for c in cyphers]
+    cyphers_b64 = [base64.b64encode(ciphertext).decode() for ciphertext in cyphers]
     return cyphers_b64
 
 
