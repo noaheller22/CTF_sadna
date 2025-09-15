@@ -1,5 +1,5 @@
+import argparse
 import time
-import math
 import random
 import requests
 
@@ -7,7 +7,7 @@ from itertools import chain
 from requests import Session
 
 
-SERVER = "http://127.0.0.1:5005"
+SERVER = "http://nova.cs.tau.ac.il:5005"
 NUM_CANDIDATES = 200
 ADDRESS_SIZE_BYTES = 8
 EVICTION_SUPERSET_SIZE_FACTOR = 20
@@ -152,15 +152,17 @@ def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_confi
 
 
 def main():
-  cyphertexts = [
-    "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
-    "zlFQJpaemhCmuONXmJ+JmsxdUv328UV/N3EQnFIlzy0OaYbagg/NIdKd8yClGQ8KYGE/kwynV6G+cAYR4Dfz+CUfHDooq2laQkS87rDtKvwsxNq/kOO3UqhsjtLgKrQTrfqIQMujbVlfAroZFsIUXCiaoHxNV8Uoiu2TXxnDk5k=",
-  ]
-  cache_config = CacheConfig(requests.get(f"{SERVER}/config").json())
-  eviction_set = build_function_eviction_set(cache_config)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cipher_candidate")
+    args = parser.parse_args()
 
-  responses = [bleichenbacher_oracle(cyphertext, eviction_set, cache_config) for cyphertext in cyphertexts]
-  print(responses)
+    ciphertext = args.cipher_candidate
+
+    cache_config = CacheConfig(requests.get(f"{SERVER}/config").json())
+    eviction_set = build_function_eviction_set(cache_config)
+
+    responses = bleichenbacher_oracle(ciphertext, eviction_set, cache_config)
+    print(responses)
 
 
 if __name__ == "__main__":
