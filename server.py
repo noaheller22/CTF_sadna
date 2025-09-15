@@ -16,7 +16,7 @@ class ctf_server() :
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
-            j = 4 ## remove this and change j to i when all oracles are created
+            j = 3 ## remove this and change j to i when all oracles are created
             with open(f"private{j}.pem", "rb") as f:
                 self.stages_keys[i] = RSA.import_key(f.read())
         
