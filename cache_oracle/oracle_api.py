@@ -1,5 +1,6 @@
 import base64
 import logging
+from collections import defaultdict
 
 from flask import Flask, request, jsonify
 from Crypto.PublicKey import RSA
@@ -19,20 +20,27 @@ with open(PRIVATE_KEY_PATH, "rb") as key_file:
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 cipher = PKCS1_v1_5.new(private_key)
-cache_instance = Cache()
 app = Flask(__name__)
+
+user_cache_mapping = defaultdict(Cache)
 
 
 # Routes
-@app.route("/config", methods=["GET"])
-def config():
-    global cache_instance
+@app.route("/config/<user_id>", methods=["GET"])
+def config(user_id):
+    global user_cache_mapping
+
+    user_id = request.view_args["user_id"]
+    cache_instance = user_cache_mapping[user_id]
+
     return jsonify(cache_instance.get_cache_configuration())
 
 
-@app.route("/flush", methods=["POST"])
-def flush():
-    global cache_instance
+@app.route("/flush/<user_id>", methods=["POST"])
+def flush(user_id):
+    global user_cache_mapping
+    cache_instance = user_cache_mapping[user_id]
+
     flush_notice = "Success"
     
     try:
@@ -43,11 +51,12 @@ def flush():
     return jsonify({"Flush": flush_notice})
 
 
-@app.route("/write", methods=["POST"])
-def write():
-    global cache_instance
-    write_notice = "Granted"
+@app.route("/write/<user_id>", methods=["POST"])
+def write(user_id):
+    global user_cache_mapping
+    cache_instance = user_cache_mapping[user_id]
 
+    write_notice = "Granted"
     addrs = request.json.get("addrs", [])
 
     try:
@@ -64,11 +73,12 @@ def write():
     return jsonify({"Write": write_notice})
 
 
-@app.route("/read", methods=["POST"])
-def read():
-    global cache_instance
-    read_notice = "Granted"
+@app.route("/read/<user_id>", methods=["POST"])
+def read(user_id):
+    global user_cache_mapping
+    cache_instance = user_cache_mapping[user_id]
 
+    read_notice = "Granted"
     addrs = request.json.get("addrs", [])
 
     try:
@@ -85,10 +95,11 @@ def read():
     return jsonify({"Read": read_notice})
 
 
-@app.route("/oracle", methods=["POST"])
-def oracle():
-    global cache_instance
-    
+@app.route("/oracle/<user_id>", methods=["POST"])
+def oracle(user_id):
+    global user_cache_mapping
+    cache_instance = user_cache_mapping[user_id]
+
     try:
         data = request.get_json()
         ciphertext = data.get("ciphertext")

@@ -26,16 +26,16 @@ class CacheConfig:
     self.function_lines = self.function_size // self.line_length
 
 
-def read(addrs: list[int], session: Session | None = None):
-  url = f"{SERVER}/read"
+def read(addrs: list[int], user_id: str, session: Session | None = None):
+  url = f"{SERVER}/read/{user_id}"
   json = {"addrs": addrs}
 
   r = session.post(url, json=json) if session else requests.post(url, json=json)
   return r.json()
 
 
-def write(addrs: list[int], session: Session | None = None):
-  url = f"{SERVER}/write"
+def write(addrs: list[int], user_id: str, session: Session | None = None):
+  url = f"{SERVER}/write/{user_id}"
   json = {"addrs": addrs}
 
   if session:
@@ -44,8 +44,8 @@ def write(addrs: list[int], session: Session | None = None):
     requests.post(url, json=json)
 
 
-def flush(session: Session | None = None):
-  url = f"{SERVER}/flush"
+def flush(user_id: str, session: Session | None = None):
+  url = f"{SERVER}/flush/{user_id}"
 
   if session:
     session.post(url)
@@ -53,29 +53,30 @@ def flush(session: Session | None = None):
     requests.post(url)
 
 
-def measure_access_function(cache_config: CacheConfig) -> float:
+def measure_access_function(cache_config: CacheConfig, user_id: str) -> float:
   start = time.perf_counter()
   read(
     [
       addr for addr in range(
         cache_config.function_address, cache_config.function_address + cache_config.function_size, cache_config.line_length
       )
-    ]
+    ],
+    user_id,
   )
   return (time.perf_counter() - start) / (cache_config.function_size // cache_config.line_length)
 
 
-def measure_eviction_attempt(address: int, session: Session, eviction_set_candidate: set[int], cache_config: CacheConfig) -> float:
-  write([address], session)
-  write(list(eviction_set_candidate), session)
+def measure_eviction_attempt(address: int, session: Session, eviction_set_candidate: set[int], cache_config: CacheConfig, user_id: str) -> float:
+  write([address], user_id, session)
+  write(list(eviction_set_candidate), user_id, session)
 
   start = time.perf_counter()
-  read([address], session)
+  read([address], user_id, session)
 
   return time.perf_counter() - start
 
 
-def create_address_eviction_superset(address: int, session: Session, cache_config: CacheConfig) -> set[int]:
+def create_address_eviction_superset(address: int, session: Session, cache_config: CacheConfig, user_id: str) -> set[int]:
   superset_size = cache_config.associativity * EVICTION_SUPERSET_SIZE_FACTOR
   allowed_range = list(
     chain(
@@ -87,7 +88,7 @@ def create_address_eviction_superset(address: int, session: Session, cache_confi
   count = 0
   
   superset_candidate = set(random.sample(allowed_range, superset_size))
-  while measure_eviction_attempt(address, session, superset_candidate, cache_config) < TIME_THRESHOLD:
+  while measure_eviction_attempt(address, session, superset_candidate, cache_config, user_id) < TIME_THRESHOLD:
     superset_candidate = set(random.sample(allowed_range, superset_size))
     time.sleep(0.005)
   
@@ -95,20 +96,20 @@ def create_address_eviction_superset(address: int, session: Session, cache_confi
   return superset_candidate
 
 
-def build_function_eviction_set(cache_config: CacheConfig) -> list[int]:
+def build_function_eviction_set(cache_config: CacheConfig, user_id: str) -> list[int]:
   session = Session()
 
   addresses = range(cache_config.function_address, cache_config.function_address + cache_config.function_size, cache_config.line_length)
   function_eviction_set = set()
   
   for address in addresses:
-    function_eviction_set.update(build_address_eviction_set(address, session, cache_config))
+    function_eviction_set.update(build_address_eviction_set(address, session, cache_config, user_id))
   
   return function_eviction_set
 
 
-def build_address_eviction_set(address: int, session: Session, cache_config: CacheConfig) -> list[int]:
-  eviction_set = create_address_eviction_superset(address, session, cache_config)
+def build_address_eviction_set(address: int, session: Session, cache_config: CacheConfig, user_id: str) -> list[int]:
+  eviction_set = create_address_eviction_superset(address, session, cache_config, user_id)
   minimal_eviction_set_size = cache_config.associativity
   partitions = minimal_eviction_set_size + 1
   
@@ -123,7 +124,7 @@ def build_address_eviction_set(address: int, session: Session, cache_config: Cac
     
     for subset in subsets:
       eviction_set.difference_update(subset)
-      if measure_eviction_attempt(address, session, eviction_set, cache_config) > TIME_THRESHOLD:
+      if measure_eviction_attempt(address, session, eviction_set, cache_config, user_id) > TIME_THRESHOLD:
         break
       eviction_set.update(subset)
     
@@ -133,20 +134,20 @@ def build_address_eviction_set(address: int, session: Session, cache_config: Cac
   return eviction_set
 
 
-def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_config: CacheConfig, use_flush: bool = False) -> bool:
-  write(list(range(cache_config.function_address, cache_config.function_address + cache_config.function_size))) 
+def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_config: CacheConfig, user_id: str, use_flush: bool = False) -> bool:
+  write(list(range(cache_config.function_address, cache_config.function_address + cache_config.function_size)), user_id) 
 
   if use_flush:
-    flush()
+    flush(user_id)
   else:
-    write(list(eviction_set))
+    write(list(eviction_set), user_id)
 
-  r = requests.post(f"{SERVER}/oracle", json={"ciphertext": ciphertext})
+  r = requests.post(f"{SERVER}/oracle/{user_id}", json={"ciphertext": ciphertext})
   if r.status_code != 200:
     print(r.json())
     raise ValueError
   
-  average_reload_time = measure_access_function(cache_config)
+  average_reload_time = measure_access_function(cache_config, user_id)
 
   return average_reload_time < TIME_THRESHOLD
 
@@ -154,14 +155,16 @@ def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_confi
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--cipher_candidate")
+    parser.add_argument("--user_id")
     args = parser.parse_args()
 
     ciphertext = args.cipher_candidate
+    user_id = args.user_id
 
-    cache_config = CacheConfig(requests.get(f"{SERVER}/config").json())
-    eviction_set = build_function_eviction_set(cache_config)
+    cache_config = CacheConfig(requests.get(f"{SERVER}/config/{user_id}").json())
+    eviction_set = build_function_eviction_set(cache_config, user_id)
 
-    responses = bleichenbacher_oracle(ciphertext, eviction_set, cache_config)
+    responses = bleichenbacher_oracle(ciphertext, eviction_set, cache_config, user_id)
     print(responses)
 
 
