@@ -7,13 +7,13 @@ from itertools import chain
 from requests import Session
 
 
-SERVER = "http://nova.cs.tau.ac.il:5005"
+SERVER = "http://127.0.0.1:5005"
 NUM_CANDIDATES = 200
 ADDRESS_SIZE_BYTES = 8
 EVICTION_SUPERSET_SIZE_FACTOR = 20
 CACHE_HIT_TIME = 0.0001
 
-TIME_THRESHOLD = CACHE_HIT_TIME * 40
+TIME_THRESHOLD = CACHE_HIT_TIME * 30
 
 class CacheConfig:
   def __init__(self, cache_config: dict[str, int]):
@@ -54,8 +54,7 @@ def flush(user_id: str, session: Session | None = None):
 
 
 def measure_access_function(cache_config: CacheConfig, user_id: str) -> float:
-  start = time.perf_counter()
-  read(
+  response_json = read(
     [
       addr for addr in range(
         cache_config.function_address, cache_config.function_address + cache_config.function_size, cache_config.line_length
@@ -63,17 +62,18 @@ def measure_access_function(cache_config: CacheConfig, user_id: str) -> float:
     ],
     user_id,
   )
-  return (time.perf_counter() - start) / (cache_config.function_size // cache_config.line_length)
+  execution_time = float(response_json["Time"])
+
+  return execution_time / (cache_config.function_size // cache_config.line_length)
 
 
 def measure_eviction_attempt(address: int, session: Session, eviction_set_candidate: set[int], cache_config: CacheConfig, user_id: str) -> float:
   write([address], user_id, session)
   write(list(eviction_set_candidate), user_id, session)
 
-  start = time.perf_counter()
-  read([address], user_id, session)
-
-  return time.perf_counter() - start
+  response_json = read([address], user_id, session)
+  
+  return float(response_json["Time"])
 
 
 def create_address_eviction_superset(address: int, session: Session, cache_config: CacheConfig, user_id: str) -> set[int]:

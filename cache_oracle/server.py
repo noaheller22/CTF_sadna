@@ -1,5 +1,6 @@
 import base64
 import logging
+import time
 from collections import defaultdict
 
 from flask import Flask, request, jsonify
@@ -79,20 +80,23 @@ def read(user_id):
     cache_instance = user_cache_mapping[user_id]
 
     read_notice = "Granted"
+    execution_time = None
     addrs = request.json.get("addrs", [])
 
     try:
+        start = time.perf_counter()
         for addr in addrs:
             cache_instance.probe(int(addr))
+        execution_time = time.perf_counter() - start
     
     except ValueError:
         read_notice = "Errored - address must be an int"
     except IndexError:
         read_notice = "Errored - address must be inside the DRAM"
-    except Exception:
-        read_notice = "Errored"
-        
-    return jsonify({"Read": read_notice})
+    except Exception as error:
+        read_notice = f"Errored: {error}"
+
+    return jsonify({"Read": read_notice, "Time": execution_time})
 
 
 @app.route("/oracle/<user_id>", methods=["POST"])
