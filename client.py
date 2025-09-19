@@ -64,6 +64,7 @@ class CTF () :
             if data["result"] == "passed":
                 print(f"Stage passed!")
                 self.stage +=1
+                self.hint_num = 0
                 if self.stage != game.MASTER_ORACLE :
                     print(f"Access next stage with URL {data['next_stage_URL']}")
                     print(f"The server's public key is: \n")
