@@ -15,37 +15,11 @@ app = Flask(__name__)
 with open("cooperation_stage/private3.pem", "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
 
-# 🔁 Lockout states (timestamp until unlocked)
-lockout = {
-    "endpoint_1": 0,
-    "endpoint_2": 0,
-    "global": 0
-}
-
-curr_cipher = {
-    "endpoint_1": None,
-    "endpoint_2": None,    
-}
-
 lockout = {
     "global": 0    
 }
-
 curr_cipher = {}
-
-# ⏱ Duration to lock (in seconds)
 LOCK_DURATION = 10
-
-"""# 🛑 Middleware to enforce lockouts
-@app.before_request
-def check_lockout():
-    now = time.time()
-    port = int(request.environ.get('SERVER_PORT'))
-
-    if now < lockout["global"]:
-        abort(403, "Global lockout in effect.")
-    if now < lockout[port]:
-        abort(403, f"Port {port} is temporarily locked.")"""
 
 # 🔐 Decryption & Padding Check
 def is_padding_valid(ciphertext: bytes):
@@ -57,11 +31,6 @@ def is_padding_valid(ciphertext: bytes):
     except Exception:
         print("Exception")
         return Exception
-    """try:
-        private_key.decrypt(ciphertext, padding.PKCS1v15())
-        return True
-    except Exception:
-        return False"""
 
 @app.route("/send_cipher/<player_id>", methods=["POST"])
 def send_cipher(player_id):
@@ -83,7 +52,8 @@ def send_cipher(player_id):
             # Valid padding: block everything
             print("Cipher is valid!")
             lockout["global"] = now + LOCK_DURATION
-        else if is_padding_valid(cip)
+        elif result == Exception :
+            return "Couldn't parse message. Please try again."
         else:
             # Invalid padding: block this port only
             lockout[player_id] = now + LOCK_DURATION

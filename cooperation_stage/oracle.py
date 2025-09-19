@@ -24,7 +24,11 @@ PLAYER_ID_2 = 'bob'
 
 def send_cipher(cipher_candidate) :
     print("sending cipher...")
-    cipher_candidate = base64.b64decode(cipher_candidate)
+    try :
+        cipher_candidate = base64.b64decode(cipher_candidate)
+    except :
+        print("Something is wrong with the cipher candidate. Please try again")
+        exit()
     requests.post(f"{SERVER_PATH}/send_cipher/{PLAYER_ID_1}", data=cipher_candidate)
     res = requests.post(f"{SERVER_PATH}/send_cipher/{PLAYER_ID_2}", data=INVALID_CIPHER)
     print("res.text is ", res.text)
