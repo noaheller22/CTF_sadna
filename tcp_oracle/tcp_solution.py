@@ -11,7 +11,7 @@ def send_cipher(cipher_bytes):
             try:
                 data = s.recv(1024)
                 if data == b"":
-                    print("[+] Connection closed gracefully (valid padding)")
+                    print("[+] Connection closed gracefully (valid padding, or problem with the cipher like incorrect length)")
                 else:
                     print("[?] Got some data:", data)
             except ConnectionResetError:
