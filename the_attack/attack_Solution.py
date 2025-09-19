@@ -2,7 +2,7 @@ import requests
 import base64
 from Crypto.PublicKey import RSA
 
-ORACLE_PATH        = "http://localhost:5000/oracle"
+ORACLE_PATH        = "http://nova.cs.tau.ac.il:5006/oracle"
 PUBLIC_KEY_PATH    = "public.pem"
 SECRET_CIPHER_PATH = "secret_cipher.bin" #should be .bin file
 CIPHER_LENGTH      = 1024

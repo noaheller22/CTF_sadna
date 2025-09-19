@@ -2,7 +2,7 @@ import socket
 import sys
 
 HOST = ""   # Oracle server address as it been given to you
-PORT = ???     # Oracle server port as it been given to you
+PORT = ???  # Oracle server port as it been given to you
 
 def send_cipher(cipher_bytes):
     try:
