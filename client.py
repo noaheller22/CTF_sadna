@@ -2,14 +2,24 @@
 import random as rand
 import requests
 import base64
+import argparse
+
+### Please choose a player_id ####
+PLAYER_ID = "alice"
+##################################
 
 BACKEND_URL = "http://nova.cs.tau.ac.il:5000"
-PLAYER_ID = "alice"  
-### For now ciphers are printed to terminal. Might need to change to writing to file
+
 class CTF () :
     def __init__(self):  
         self.stage = 0
         self.MASTER_ORACLE = 5
+        self.order = {
+            1 : "first",
+            2 : "second",
+            3 : "third"
+        }
+        self.hint_num = 0
 
     def get_stage(self) :
         res = requests.get(f"{BACKEND_URL}/get_stage/{PLAYER_ID}").json()
@@ -17,7 +27,15 @@ class CTF () :
     
     def get_hint(self) :
         res = requests.get(f"{BACKEND_URL}/get_hint/{PLAYER_ID}").json()
-        print(f"Your hint is:\n {res['hint']}")
+        print("length is ", len(res['hint']))
+        if game.hint_num >= len(res['hint']) :
+            print("You have reached the maximum hints number. Printing all hints:\n")
+            for i in range(len(res['hint'])) :
+                print(f"hint {i}: {res['hint'][i]}\n")
+        else : 
+            print(f"Your {game.order[game.hint_num + 1]} hint is: {res['hint'][game.hint_num]}\n")
+            game.hint_num+=1
+
     
     def test_oracle(self) :
             print("You are going to be presented with a number of ciphers. \n"\
@@ -32,12 +50,13 @@ class CTF () :
                 if cmd == 'y' : 
                     i +=1
                     guess = True
+                    guesses.append(guess)
                 elif cmd == 'n' :
                     guess = False
                     i +=1
+                    guesses.append(guess)
                 else : 
-                    print("Not a valid charachter. Lets try again:")
-                guesses.append(guess)
+                    print("Not a valid character. Lets try again:")
             res = requests.post(f"{BACKEND_URL}/submit/{PLAYER_ID}", json={"guesses": guesses})
             print("guesses are", guesses) 
             data = res.json()
@@ -80,10 +99,11 @@ level 3: level 2 + partial implementaion\n""")
                 cmd = input(">>> ").strip().lower()
                 if cmd == 'n' :
                     break
+                if cmd != 'y' :
+                    print("Not a valid character. Lets try again:")
         print(f"""We guess you solved our CTF. If you got the right answer, trust us - you'll know.\n
 Goodbye!""")
         exit() 
-        ### Can add a check with server this is the correct message, for now it's obvious (player has to do recovered_plaintext.decode('utf-8') first)
 
     def get_ciphers(self) :
         res = requests.get(f"{BACKEND_URL}/get_ciphers/{PLAYER_ID}").json()
@@ -92,33 +112,41 @@ Goodbye!""")
 
 game = CTF()
 
-def main():
+def main(save_path):
+    if PLAYER_ID == "" :
+        print("Please write your player id in the code and run client.py again")
+        exit()
     stage, URL, public_key = game.get_stage()
     game.stage = stage
     if stage == 0:
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
-        print(f"Welcome back! you are in stage {stage}, URL: {URL}")
+        print(f"Welcome back! you are in stage {stage + 1}, URL: {URL}. public key is:\n{public_key}")
         main_menu()
     command = input(">>> ").strip()
     if command.lower() == 'y' :
         print(f"""Great! lets Start. The first server you need to defeat is:
-URL: {URL} \nPublic Key: {public_key}""")
+URL: {URL} \nPublic Key:\n{public_key}""")
         main_menu()
 
 def main_menu():
     while True: 
         if game.stage == game.MASTER_ORACLE :
             game.last_stage() 
-        print(f"Get a hint: H\n" \
+        print(f"Get a hint (some servers have more than one hint): H\n" \
         "Test my oracle to continue to the next stage: T\n")
         cmd = input(">>> ").strip().lower()  
         if cmd == "h":
+            print("\033[2J\033[H", end="")
             game.get_hint()
         elif cmd == "t":
+            print("\033[2J\033[H", end="")
             game.test_oracle()
         else : 
             print("Not a valid charachter. Try again.")              
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--save_path")
+    args = parser.parse_args()
+    main(args.save_path)

@@ -3,7 +3,7 @@ import base64
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
 
-PUBLIC_KEY_PATH = "cache_oracle/public.pem" # put a path to your public key
+PUBLIC_KEY_PATH = "" # put a path to your public key
 
 print("creates an invalid cipher")
 ciphertext = b"\x00" * 128

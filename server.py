@@ -16,19 +16,25 @@ class ctf_server() :
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
-            j = 3 ## remove this and change j to i when all oracles are created
-            with open(f"private{j}.pem", "rb") as f:
+            #j = 3 ## remove this and change j to i when all oracles are created
+            with open(f"private{i+1}.pem", "rb") as f:
                 self.stages_keys[i] = RSA.import_key(f.read())
         
         ##dummies
         self.stages_hints = {
-            0 : "hint1", ## stage0 oracle
-            1 : "hint2", ## stage1 oracle
-            2 : "hint3", ## stage2 oracle
-            3 : "hint4", ## stage3 oracle
+            0 : [],
+            1 : [],
+            2 : "Two is better than one", ## stage2 oracle
+            3 : "Wireshark", ## stage3 oracle
             4 : "hint5", ## stage4 oracle
             5 : "hint6"  ## master oracle
         }
+        for i in range(3) :
+            with open(f"./open-ssl-servers/Error-Message-Vulnerability/clues/clue{i}.txt", "r", encoding="utf-8") as f:
+                self.stages_hints[0].append(f.read())
+            with open(f"./open-ssl-servers/Timing-Vulnerability/clues/clue{i}.txt", "r", encoding="utf-8") as f:
+                self.stages_hints[1].append(f.read())
+
         self.curr_stage = {}  
 
         self.URLs = {

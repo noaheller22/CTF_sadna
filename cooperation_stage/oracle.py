@@ -2,13 +2,15 @@ import argparse
 import requests
 import base64
 
-SERVER_PATH = "http://nova.cs.tau.ac.il:5005"
+SERVER_PATH = "http://nova.cs.tau.ac.il:5003"
 INVALID_TEXT = ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
 INVALID_CIPHER = base64.b64decode(INVALID_TEXT)
+PLAYER_ID_1 = 'alice'
+PLAYER_ID_2 = 'bob'
 
-def send_cipher(cipher_candidate) :
+"""def send_cipher(cipher_candidate) :
     print("sending cipher...")
     cipher_candidate = base64.b64decode(cipher_candidate)
     requests.post(f"{SERVER_PATH}/send_cipher_1", data=cipher_candidate)
@@ -18,7 +20,20 @@ def send_cipher(cipher_candidate) :
         print("Cipher is valid!")
         exit()
     print("Cipher is invalid!")
+    exit()"""
+
+def send_cipher(cipher_candidate) :
+    print("sending cipher...")
+    cipher_candidate = base64.b64decode(cipher_candidate)
+    requests.post(f"{SERVER_PATH}/send_cipher/{PLAYER_ID_1}", data=cipher_candidate)
+    res = requests.post(f"{SERVER_PATH}/send_cipher/{PLAYER_ID_2}", data=INVALID_CIPHER)
+    print("res.text is ", res.text)
+    if res.text == "Server busy, please try again later\n" :
+        print("Cipher is valid!")
+        exit()
+    print("Cipher is invalid!")
     exit()
+
 
 def main(cipher_candidate) :
     send_cipher(cipher_candidate)

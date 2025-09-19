@@ -27,6 +27,12 @@ curr_cipher = {
     "endpoint_2": None,    
 }
 
+lockout = {
+    "global": 0    
+}
+
+curr_cipher = {}
+
 # ⏱ Duration to lock (in seconds)
 LOCK_DURATION = 10
 
@@ -50,12 +56,54 @@ def is_padding_valid(ciphertext: bytes):
         return is_valid
     except Exception:
         print("Exception")
-        return False
+        return Exception
     """try:
         private_key.decrypt(ciphertext, padding.PKCS1v15())
         return True
     except Exception:
         return False"""
+
+@app.route("/send_cipher/<player_id>", methods=["POST"])
+def send_cipher(player_id):
+    if player_id not in lockout :
+        lockout[player_id] = 0
+        curr_cipher[player_id] = None
+    print("got cipher 1")
+    ciphertext = request.data # raw bytes
+    print(f"cipher text is {base64.b64encode(ciphertext).decode()}")
+    now = time.time()
+    curr_cipher[player_id] = ciphertext
+
+    if now < lockout["global"] or now < lockout[player_id] :
+        print(f"Server busy, please try again later\n")
+        return f"Server busy, please try again later\n"
+    else : 
+        result = is_padding_valid(ciphertext)
+        if result:
+            # Valid padding: block everything
+            print("Cipher is valid!")
+            lockout["global"] = now + LOCK_DURATION
+        else if is_padding_valid(cip)
+        else:
+            # Invalid padding: block this port only
+            lockout[player_id] = now + LOCK_DURATION
+        print(f"Got message. Starting to process\n")
+        return f"Got message. Starting to process\n"
+
+@app.route("/check_status/<player_id>", methods=["GET"])
+def check_status(player_id):
+    if curr_cipher[player_id] == None :
+        print(f"No message sent\n" )
+        return f"No message sent\n" 
+    elif now < lockout[player_id] :
+        print(f"Processing...\n")
+        return f"Processing...\n"
+    else :
+        print(f"Done with cyper: {curr_cipher[player_id]}\n")
+        return f"Done with cyper: {curr_cipher[player_id]}\n"
+
+
+
 
 # 📬 Endpoint to send the cipher
 @app.route("/send_cipher_1", methods=["POST"])
@@ -130,4 +178,4 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=5000)
     args = parser.parse_args()
 
-    app.run(host="0.0.0.0", port=5005)
+    app.run(host="0.0.0.0", port=5003)

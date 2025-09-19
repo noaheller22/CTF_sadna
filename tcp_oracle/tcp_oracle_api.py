@@ -7,7 +7,7 @@ import os
 
 
 HOST = "127.0.0.1"
-PORT = 9000
+PORT = 5004
 PRIVATE_KEY_PATH = "private_tcp.pem"
 
 # Load private key
