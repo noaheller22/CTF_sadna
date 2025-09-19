@@ -24,10 +24,10 @@ class ctf_server() :
         self.stages_hints = {
             0 : [],
             1 : [],
-            2 : "Two is better than one", ## stage2 oracle
-            3 : "Wireshark", ## stage3 oracle
-            4 : "hint5", ## stage4 oracle
-            5 : "hint6"  ## master oracle
+            2 : ["Two is better than one"], ## stage2 oracle
+            3 : ["Wireshark"], ## stage3 oracle
+            4 : ["hint5"], ## stage4 oracle
+            5 : ["hint6"]  ## master oracle
         }
         for i in range(3) :
             with open(f"./open-ssl-servers/Error-Message-Vulnerability/clues/clue{i}.txt", "r", encoding="utf-8") as f:
