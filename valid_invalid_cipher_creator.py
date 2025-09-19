@@ -13,7 +13,7 @@ print(invalid_ciphertext_to_send)
 
 print("creates a valid cipher")
 with open(PUBLIC_KEY_PATH, "rb") as f:
-    pub_key = RSA.import_key(f.read())
+    pub_key = RSA.import_key(f.read()).publickey()
 
 cipher = PKCS1_v1_5.new(pub_key)
 msg = b"valid cipher"
