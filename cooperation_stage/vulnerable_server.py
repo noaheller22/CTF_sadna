@@ -62,6 +62,7 @@ def send_cipher(player_id):
 
 @app.route("/check_status/<player_id>", methods=["GET"])
 def check_status(player_id):
+    now = time.time()
     if curr_cipher[player_id] == None :
         print(f"No message sent\n" )
         return f"No message sent\n" 
