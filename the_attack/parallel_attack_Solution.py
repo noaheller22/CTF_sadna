@@ -185,7 +185,7 @@ def compute_ciphertexts_parallel(c0, rsa_key, s_list, max_workers=NUM_CORES):
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         return list(executor.map(compute_ciphertext, s_list))
 
-def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=500, max_workers=NUM_CORES):
+def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=1200, max_workers=NUM_CORES):
     """
     Finds the smallest 's' such that the modified ciphertext is PKCS#1 v1.5 conforming.
 
@@ -251,7 +251,7 @@ def search_single_interval(k, rsa_key, B, prev_s, a, b, c0):
         r += 1
 
 
-def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch_size=500, max_workers=NUM_CORES):
+def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch_size=1200, max_workers=NUM_CORES):
     """
     Searches for the next valid 's' when only one interval remains.
 
