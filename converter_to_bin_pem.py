@@ -1,5 +1,6 @@
 import sys
 import os
+import base64
 
 #############################################################################
 ## use this script to make files from the strings the server prints to you ##
@@ -17,8 +18,8 @@ def main():
     b_p = sys.argv[3]
 
     if b_p == "b":
-        # Convert ASCII string to bytes
-        cipher_bytes = text_str.encode("ascii")
+        # Convert base64 string to bytes
+        cipher_bytes = base64.b64decode(text_str)
 
         # Write to .bin file
         with open(output_path, "wb") as f:
