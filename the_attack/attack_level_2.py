@@ -119,7 +119,7 @@ def find_min_conforming(k, rsa_key, c0, start_s):
 
     return s
 
-def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=500, max_workers=NUM_CORES):
+def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=1200, max_workers=NUM_CORES):
     """
     Finds the smallest 's' such that the modified ciphertext is PKCS#1 v1.5 conforming.
 
@@ -157,7 +157,7 @@ def search_single_interval(k, rsa_key, B, prev_s, a, b, c0):
 
     return s
 
-def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch_size=500, max_workers=NUM_CORES):
+def search_single_interval_batch_parallel(k, rsa_key, B, prev_s, a, b, c0, batch_size=1200, max_workers=NUM_CORES):
     """
     Searches for the next valid 's' when only one interval remains.
 
@@ -217,3 +217,4 @@ if __name__ == "__main__":
     c = load_secret_cipher()
     result = bleichenbacher_attack(pub_key, l, c)
     print(result)
+
