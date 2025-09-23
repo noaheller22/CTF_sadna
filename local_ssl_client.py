@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 TLS_VERSION = b"\x03\x01"  # TLS 1.0
 CIPHER_SUITE_ID = 0x002f   # TLS_RSA_WITH_AES_128_SHA
-HOST = "127.0.0.1"
+HOST = "http://127.0.0.1"
 PORT = 5002
 BLOCK_SIZE = 16            # 128 bit AES
 SEQUENCE_NUMBER = 3        # Used after 3 records are sent (client hello, client key exchange, change cipher spec)

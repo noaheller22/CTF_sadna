@@ -11,7 +11,9 @@ SECRET_CIPHER_PATH = "cipher.bin" #should be .bin file
 CIPHER_LENGTH      = 1024
 NUM_CORES = multiprocessing.cpu_count()
 
+
 s_list = []
+
 
 def egcd(a, b):
     """
@@ -106,15 +108,16 @@ def load_public_key():
 
     return pub_key
 
+
 def load_secret_cipher():
     """
     Output: the secret cipher. make sure the SECRET_CIPHER_PATH is well define!
     """
-
     with open(SECRET_CIPHER_PATH, "rb") as cipher_file:
         secret_cipher = cipher_file.read()
 
     return int.from_bytes(secret_cipher, byteorder='big')
+
 
 def merge_intervals(intervals):
     """
@@ -126,7 +129,6 @@ def merge_intervals(intervals):
     Input  : intervals        : List of tuples (a, b) with a <= b, representing valid plaintext ranges.
     Output : merged_intervals : List of non-overlapping, sorted tuples (a, b) where each a <= b and a_{i+1} > b_i.
     """
-
     intervals.sort(key=lambda x: x[0])
 
     merged_intervals = []
@@ -144,6 +146,7 @@ def merge_intervals(intervals):
     merged_intervals.append(curr)
 
     return merged_intervals
+
 
 def find_min_conforming(k, rsa_key, c0, start_s):
     """
@@ -184,6 +187,7 @@ def compute_ciphertexts_parallel(c0, rsa_key, s_list, max_workers=NUM_CORES):
 
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
         return list(executor.map(compute_ciphertext, s_list))
+
 
 def find_min_conforming_batch_parallel(k, rsa_key, c0, start_s, batch_size=1200, max_workers=NUM_CORES):
     """
@@ -321,6 +325,7 @@ def narrow_m(rsa_key, prev_intervals, s, B):
             intervals.append((start, end))
     return merge_intervals(intervals)
 
+
 def bleichenbacher_attack(pub_key, k, secret_c, verbose=False):
     """
     Inputs: pub_key  : public key
@@ -363,7 +368,6 @@ def bleichenbacher_attack(pub_key, k, secret_c, verbose=False):
         return result.to_bytes(k, byteorder='big')
     else:
         return None
-
 
 
 if __name__ == "__main__":

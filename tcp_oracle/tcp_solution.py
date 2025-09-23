@@ -1,8 +1,10 @@
+import argparse
 import socket
-import sys
+
 
 HOST = "132.67.247.151"   # Oracle server address
 PORT = 5003          # Oracle server port
+
 
 def send_cipher(cipher_bytes):
     try:
@@ -19,12 +21,14 @@ def send_cipher(cipher_bytes):
     except Exception as e:
         print(f"[!] Client error: {e}")
 
-if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print(f"Usage: python {sys.argv[0]} <cipher_hex>")
-        sys.exit(1)
 
-    cipher_ascii = sys.argv[1]
-    cipher_bytes = cipher_ascii.encode("ascii")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cipher_candidate")
+    args = parser.parse_args()
+
+    ciphertext = args.cipher_candidate
+
+    cipher_bytes = ciphertext.encode("ascii")
 
     send_cipher(cipher_bytes)
