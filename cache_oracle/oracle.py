@@ -7,7 +7,7 @@ from itertools import chain
 from requests import Session
 
 
-SERVER = "noca.cs.tau.ac.il:5005"
+SERVER = "http://nova.cs.tau.ac.il:5005"
 NUM_CANDIDATES = 200
 EVICTION_SUPERSET_SIZE_FACTOR = 20
 CACHE_HIT_TIME = 0.0001

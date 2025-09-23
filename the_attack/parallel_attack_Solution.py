@@ -5,9 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 import multiprocessing
 
 
-ORACLE_PATH        = "http://localhost:5006/oracle"
+ORACLE_PATH        = "http://nova.cs.tau.ac.il:5006/oracle"
 PUBLIC_KEY_PATH    = "public.pem"
-SECRET_CIPHER_PATH = "secret_cipher.bin" #should be .bin file
+SECRET_CIPHER_PATH = "cipher.bin" #should be .bin file
 CIPHER_LENGTH      = 1024
 NUM_CORES = multiprocessing.cpu_count()
 
