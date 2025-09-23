@@ -3,3 +3,6 @@ poetry.lock
 .venv
 **/__pycache__/
 .DS_Store
+trial_097/
+trial_openssl_096a/
+trial_openssl_098f/
