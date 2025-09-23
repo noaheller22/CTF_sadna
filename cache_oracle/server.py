@@ -12,6 +12,7 @@ from cache import Cache
 
 PRIVATE_KEY_PATH = "private.pem"
 OPEN_PORT = 5005
+CUTOFF_LENGTH = 100
 
 
 # Setup
@@ -35,21 +36,6 @@ def config(user_id):
     cache_instance = user_cache_mapping[user_id]
 
     return jsonify(cache_instance.get_cache_configuration())
-
-
-@app.route("/flush/<user_id>", methods=["POST"])
-def flush(user_id):
-    global user_cache_mapping
-    cache_instance = user_cache_mapping[user_id]
-
-    flush_notice = "Success"
-    
-    try:
-        cache_instance.reset_cache()
-    except Exception:
-        flush_notice = "Errored"
-
-    return jsonify({"Flush": flush_notice})
 
 
 @app.route("/write/<user_id>", methods=["POST"])
@@ -83,7 +69,11 @@ def read(user_id):
     execution_time = None
     addrs = request.json.get("addrs", [])
 
+    if len(addrs) > CUTOFF_LENGTH:
+        return jsonify({"Read": "Errored - request contains too many addresses", "Time": 0})
+
     try:
+        
         start = time.perf_counter()
         for addr in addrs:
             cache_instance.probe(int(addr))

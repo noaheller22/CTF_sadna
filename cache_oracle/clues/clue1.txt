@@ -1,0 +1,10 @@
+def measure_eviction_attempt(address: int, session: Session, eviction_set_candidate: set[int], cache_config: CacheConfig, user_id: str) -> float:
+  write([address], user_id, session)
+  write(list(eviction_set_candidate), user_id, session)
+
+  response_json = read([address], user_id, session)
+  if(response_json["Read"].startswith("Errored")):
+    print(response_json)
+    raise ValueError()
+  
+  return float(response_json["Time"])

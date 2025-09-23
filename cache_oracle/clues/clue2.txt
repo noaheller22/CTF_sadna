@@ -1,0 +1,25 @@
+def build_address_eviction_set(address: int, session: Session, cache_config: CacheConfig, user_id: str) -> list[int]:
+  eviction_set = create_address_eviction_superset(address, session, cache_config, user_id)
+  minimal_eviction_set_size = cache_config.associativity
+  partitions = minimal_eviction_set_size + 1
+  
+  eviction_set_size = len(eviction_set)
+  while len(eviction_set) > minimal_eviction_set_size:
+    eviction_list = list(eviction_set)
+    random.shuffle(eviction_list)
+
+    chunk_size = int(eviction_set_size / partitions)
+    subsets = [set(eviction_list[i * chunk_size:(i + 1) * chunk_size]) for i in range(minimal_eviction_set_size)]
+    subsets.append(set(eviction_list[minimal_eviction_set_size * chunk_size:]))
+    
+    for subset in subsets:
+      eviction_set.difference_update(subset)
+      if measure_eviction_attempt(address, session, eviction_set, cache_config, user_id) > TIME_THRESHOLD:
+        break
+      eviction_set.update(subset)
+    
+    eviction_set_size = len(eviction_set)
+  
+  print("found minimal eviction set")
+  return eviction_set
+  
