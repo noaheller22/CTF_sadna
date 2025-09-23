@@ -4,6 +4,7 @@ import requests
 import base64
 import argparse
 
+##################################
 ### Please choose a player_id ####
 PLAYER_ID = "alice"
 ##################################
@@ -27,7 +28,6 @@ class CTF () :
     
     def get_hint(self) :
         res = requests.get(f"{BACKEND_URL}/get_hint/{PLAYER_ID}").json()
-        print("length is ", len(res['hint']))
         if game.hint_num >= len(res['hint']) :
             print("You have reached the maximum hints number. Printing all hints:\n")
             for i in range(len(res['hint'])) :
@@ -58,9 +58,7 @@ class CTF () :
                 else : 
                     print("Not a valid character. Lets try again:")
             res = requests.post(f"{BACKEND_URL}/submit/{PLAYER_ID}", json={"guesses": guesses})
-            print("guesses are", guesses) 
             data = res.json()
-            print("resutls are", data['result'])
             if data["result"] == "passed":
                 print(f"Stage passed!")
                 self.stage +=1
@@ -123,19 +121,20 @@ def main(save_path):
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
         print(f"Welcome back! you are in stage {stage + 1}, URL: {URL}. public key is:\n{public_key}")
-        main_menu()
+        main_menu(URL, public_key)
     command = input(">>> ").strip()
     if command.lower() == 'y' :
         print(f"""Great! lets Start. The first server you need to defeat is:
 URL: {URL} \nPublic Key:\n{public_key}""")
-        main_menu()
+        main_menu(URL, public_key)
 
-def main_menu():
+def main_menu(URL, public_key):
     while True: 
         if game.stage == game.MASTER_ORACLE :
             game.last_stage() 
-        print(f"Get a hint (some servers have more than one hint): H\n" \
-        "Test my oracle to continue to the next stage: T\n")
+        print(f"\nGet a hint (some servers have more than one hint): H\n" \
+        "Test my oracle to continue to the next stage: T\n" \
+        "Print stage details: d\n")
         cmd = input(">>> ").strip().lower()  
         if cmd == "h":
             print("\033[2J\033[H", end="")
@@ -143,6 +142,9 @@ def main_menu():
         elif cmd == "t":
             print("\033[2J\033[H", end="")
             game.test_oracle()
+        elif cmd == "d" :
+            print(f"""server you need to defeat is:
+URL: {URL} \nPublic Key:\n{public_key}""")
         else : 
             print("Not a valid charachter. Try again.")              
 

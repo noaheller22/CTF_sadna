@@ -16,24 +16,31 @@ class ctf_server() :
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
-            #j = 3 ## remove this and change j to i when all oracles are created
             with open(f"private{i+1}.pem", "rb") as f:
                 self.stages_keys[i] = RSA.import_key(f.read())
         
-        ##dummies
         self.stages_hints = {
-            0 : [],
-            1 : [],
-            2 : ["Two is better than one"], ## stage2 oracle
-            3 : ["Wireshark"], ## stage3 oracle
-            4 : ["hint5"], ## stage4 oracle
-            5 : ["hint6"]  ## master oracle
+            0 : [], ## Error-messages server
+            1 : [], ## Timing server
+            2 : ["Wireshark"], ## TCP server
+            3 : ["Two is better than one"], ## Cooperation server
+            4 : [], ## Cache server
         }
-        for i in range(3) :
-            with open(f"./open-ssl-servers/Error-Message-Vulnerability/clues/clue{i}.txt", "r", encoding="utf-8") as f:
-                self.stages_hints[0].append(f.read())
-            with open(f"./open-ssl-servers/Timing-Vulnerability/clues/clue{i}.txt", "r", encoding="utf-8") as f:
-                self.stages_hints[1].append(f.read())
+        clues_folders = {
+            "./open-ssl-servers/Error-Message-Vulnerability/clues/" : 0,
+            "./open-ssl-servers/Error-Message-Vulnerability/clues/" : 1,
+            "./cache_oracle/clues/" : 4
+        }
+
+        for folder in clues_folders.keys() : 
+            clues = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+            for i in range(len(clues)) : 
+                with open(os.path.join(folder,clues[i]), "r", encoding="utf-8") as f:
+                    self.stages_hints[clues_folders[folder]].append(f.read())
+        
+        for i in [0,1,4] : 
+            for stage_hint in self.stages_hints[i] :
+                print(stage_hint)
 
         self.curr_stage = {}  
 
@@ -41,7 +48,7 @@ class ctf_server() :
             0 : "http://nova.cs.tau.ac.il:5001" ,
             1 : "http://nova.cs.tau.ac.il:5002" ,
             2 : "http://nova.cs.tau.ac.il:5003" ,
-            3 : "http://nova.cs.tau.ac.il:5004" ,
+            3 : "http://nova.cs.tau.ac.il:5004/send_cipher, http://nova.cs.tau.ac.il:5003/check_status" ,
             4 : "http://nova.cs.tau.ac.il:5005/config, http://nova.cs.tau.ac.il:5005/write, http://nova.cs.tau.ac.il:5005/read, http://nova.cs.tau.ac.il:5005/oracle" ,
             5 : "http://nova.cs.tau.ac.il:5006/oracle"
         }
@@ -49,7 +56,6 @@ class ctf_server() :
 app = Flask(__name__)
 game = ctf_server()
 answers = None
-##Maybe add token to player so that different players can't use eachothers endpoints
 
 @app.route("/submit/<player_id>", methods=["POST"])
 def submit(player_id):
@@ -94,7 +100,6 @@ def get_stage(player_id):
         game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="DER")
     ).decode()
     }
-    #res = {"stage" : game.curr_stage[player_id], "URL": game.URLs[game.curr_stage[player_id]], "public_key" : game.stages_keys[game.curr_stage[player_id]].publickey()}
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)
         for i in range(1,4) :
@@ -126,7 +131,7 @@ def generate_ciphers(private_key, count=game.ciphers_num):
                 result = cipher.decrypt(invalid_cipher, None)
                 is_valid = result != b''
             ciphers.append(invalid_cipher)
-    print("answers are", answers) ## for easy debugging
+    print("answers are", answers) ## for easy debugging - remove when done!
     ciphers_b64 = [base64.b64encode(ciphertext).decode() for ciphertext in ciphers]
     return ciphers_b64
 

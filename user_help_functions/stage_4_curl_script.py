@@ -1,9 +1,15 @@
+
+#######################################
+### Helper curl script for stage 4 ####
+#######################################
+
 import base64
 import requests
 import argparse
 
 def send_cipher(cipher_b64, URL):
     if cipher_b64 == None : 
+        print("No cipher was given. Assuming check_status...")
         response = requests.get(URL)
     else : 
         # Decode Base64 to raw bytes
