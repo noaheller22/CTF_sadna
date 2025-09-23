@@ -1,0 +1,18 @@
+def create_address_eviction_superset(address: int, session: Session, cache_config: CacheConfig, user_id: str) -> set[int]:
+  superset_size = cache_config.associativity * EVICTION_SUPERSET_SIZE_FACTOR
+  allowed_range = list(
+    chain(
+      range(0, cache_config.function_address, cache_config.line_length),
+      range(cache_config.function_address + cache_config.function_size, cache_config.dram_size, cache_config.line_length),
+    )
+  )
+
+  count = 0
+  
+  superset_candidate = set(random.sample(allowed_range, superset_size))
+  while measure_eviction_attempt(address, session, superset_candidate, cache_config, user_id) < TIME_THRESHOLD:
+    superset_candidate = set(random.sample(allowed_range, superset_size))
+    time.sleep(0.005)
+  
+  print("created superset")
+  return superset_candidate

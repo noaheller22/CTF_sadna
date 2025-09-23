@@ -7,9 +7,8 @@ from itertools import chain
 from requests import Session
 
 
-SERVER = "http://nova.cs.tau.ac.il:5005"
+SERVER = "noca.cs.tau.ac.il:5005"
 NUM_CANDIDATES = 200
-ADDRESS_SIZE_BYTES = 8
 EVICTION_SUPERSET_SIZE_FACTOR = 20
 CACHE_HIT_TIME = 0.0001
 
@@ -21,7 +20,6 @@ class CacheConfig:
     self.function_address = cache_config["function_pointer"]
     self.function_size = cache_config["function_size"]
     self.line_length = cache_config["line"]
-    self.sets_number = cache_config["sets"]
     self.dram_size = cache_config["dram_size"]
     self.function_lines = self.function_size // self.line_length
 
@@ -44,15 +42,6 @@ def write(addrs: list[int], user_id: str, session: Session | None = None):
     requests.post(url, json=json)
 
 
-def flush(user_id: str, session: Session | None = None):
-  url = f"{SERVER}/flush/{user_id}"
-
-  if session:
-    session.post(url)
-  else:
-    requests.post(url)
-
-
 def measure_access_function(cache_config: CacheConfig, user_id: str) -> float:
   response_json = read(
     [
@@ -72,6 +61,9 @@ def measure_eviction_attempt(address: int, session: Session, eviction_set_candid
   write(list(eviction_set_candidate), user_id, session)
 
   response_json = read([address], user_id, session)
+  if(response_json["Read"].startswith("Errored")):
+    print(response_json)
+    raise ValueError()
   
   return float(response_json["Time"])
 
@@ -134,13 +126,9 @@ def build_address_eviction_set(address: int, session: Session, cache_config: Cac
   return eviction_set
 
 
-def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_config: CacheConfig, user_id: str, use_flush: bool = False) -> bool:
+def bleichenbacher_oracle(ciphertext: bytes, eviction_set: set[int], cache_config: CacheConfig, user_id: str) -> bool:
   write(list(range(cache_config.function_address, cache_config.function_address + cache_config.function_size)), user_id) 
-
-  if use_flush:
-    flush(user_id)
-  else:
-    write(list(eviction_set), user_id)
+  write(list(eviction_set), user_id)
 
   r = requests.post(f"{SERVER}/oracle/{user_id}", json={"ciphertext": ciphertext})
   if r.status_code != 200:
