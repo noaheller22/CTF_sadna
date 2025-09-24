@@ -53,7 +53,6 @@ class Cache:
       "function_pointer": self.FUNCTION_POINTER,
       "function_size": self.FUNCTION_SIZE,
       "line": self.CACHE_LINE_SIZE,
-      "sets": self.CACHE_NUM_SETS,
       "dram_size": DRAM_SIZE,
     }
   

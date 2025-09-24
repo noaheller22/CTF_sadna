@@ -1,0 +1,1 @@
+What difference can happen in the memory if the server getting a valid or an invalid cipher?

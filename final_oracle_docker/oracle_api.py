@@ -1,21 +1,23 @@
+import multiprocessing
+import base64
+
 from flask import Flask, request, jsonify
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_v1_5
-import base64
 from concurrent.futures import ThreadPoolExecutor
-import multiprocessing
 
-# Load private key
-with open("private.pem", "rb") as key_file:
+
+NUM_CORES = multiprocessing.cpu_count()  # Determine number of CPU cores for parallelization
+
+
+with open("private.pem", "rb") as key_file:  # Load private key
     private_key = RSA.import_key(key_file.read())
 
-# Setup cipher
-cipher = PKCS1_v1_5.new(private_key)
+
+cipher = PKCS1_v1_5.new(private_key)  # Setup cipher
 
 app = Flask(__name__)
 
-# Determine number of CPU cores for parallelization
-NUM_CORES = multiprocessing.cpu_count()
 
 def decrypt_ciphertext(ct_bytes):
     """
@@ -25,6 +27,7 @@ def decrypt_ciphertext(ct_bytes):
         return cipher.decrypt(ct_bytes, None) != b''
     except Exception:
         return False
+
 
 @app.route("/oracle", methods=["POST"])
 def oracle():
@@ -58,6 +61,7 @@ def oracle():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5006, threaded=True)

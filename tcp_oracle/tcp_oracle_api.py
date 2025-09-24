@@ -1,14 +1,14 @@
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_v1_5
 import base64
 import socket
-import sys
-import os
+
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.PublicKey import RSA
 
 
 HOST = "0.0.0.0"
-PORT = 5004
+PORT = 5003
 PRIVATE_KEY_PATH = "private_tcp.pem"
+
 
 # Load private key
 with open(PRIVATE_KEY_PATH, "rb") as key_file:
@@ -43,7 +43,6 @@ def handle_client(conn, addr, private_key):
         conn.close()
 
 def main():
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind((HOST, PORT))
@@ -53,6 +52,7 @@ def main():
         while True:
             conn, addr = s.accept()
             handle_client(conn, addr, private_key)
+
 
 if __name__ == "__main__":
     import struct
