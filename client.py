@@ -31,9 +31,9 @@ class CTF () :
         if game.hint_num >= len(res['hint']) :
             print("You have reached the maximum hints number. Printing all hints:\n")
             for i in range(len(res['hint'])) :
-                print(f"hint {i}: {res['hint'][i]}\n")
+                print(f"hint {i}:\n{res['hint'][i]}\n")
         else : 
-            print(f"Your {game.order[game.hint_num + 1]} hint is: {res['hint'][game.hint_num]}\n")
+            print(f"Your {game.order[game.hint_num + 1]} hint is:\n{res['hint'][game.hint_num]}\n")
             game.hint_num+=1
 
     
@@ -59,6 +59,7 @@ class CTF () :
                     print("Not a valid character. Lets try again:")
             res = requests.post(f"{BACKEND_URL}/submit/{PLAYER_ID}", json={"guesses": guesses})
             data = res.json()
+            print("\033[2J\033[H", end="")
             if data["result"] == "passed":
                 print(f"Stage passed!")
                 self.stage +=1
@@ -143,6 +144,7 @@ def main_menu(URL, public_key):
             print("\033[2J\033[H", end="")
             game.test_oracle()
         elif cmd == "d" :
+            print("\033[2J\033[H", end="")
             print(f"""server you need to defeat is:
 URL: {URL} \nPublic Key:\n{public_key}""")
         else : 

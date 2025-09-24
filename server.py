@@ -28,7 +28,7 @@ class ctf_server() :
         }
         clues_folders = {
             "./open-ssl-servers/Error-Message-Vulnerability/clues/" : 0,
-            "./open-ssl-servers/Error-Message-Vulnerability/clues/" : 1,
+            "./open-ssl-servers/Timing-Vulnerability/clues/" : 1,
             "./cache_oracle/clues/" : 4
         }
 
@@ -37,10 +37,6 @@ class ctf_server() :
             for i in range(len(clues)) : 
                 with open(os.path.join(folder,clues[i]), "r", encoding="utf-8") as f:
                     self.stages_hints[clues_folders[folder]].append(f.read())
-        
-        for i in [0,1,4] : 
-            for stage_hint in self.stages_hints[i] :
-                print(stage_hint)
 
         self.curr_stage = {}  
 
@@ -75,7 +71,6 @@ def submit(player_id):
 
 @app.route("/get_hint/<player_id>", methods=["GET"])
 def get_hint(player_id):
-    print("sending hint")
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
     return jsonify({"hint": game.stages_hints[game.curr_stage[player_id]]})
