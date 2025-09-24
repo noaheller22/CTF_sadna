@@ -4,8 +4,8 @@ import socket
 import base64
 
 # ---------------- Config ----------------
-PROXY_HOST = "nova.cs.tau.ac.il"  
-PROXY_PORT = 6000                  
+PROXY_HOST = ""  
+PROXY_PORT = 0                  
 
 def main():
     parser = argparse.ArgumentParser()

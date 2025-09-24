@@ -10,8 +10,8 @@ from Crypto.Cipher import AES
 
 TLS_VERSION = b"\x03\x01"  # TLS 1.0
 CIPHER_SUITE_ID = 0x002f   # TLS_RSA_WITH_AES_128_SHA
-HOST = "nova.cs.tau.ac.il"
-PORT = 5001
+HOST = ""
+PORT = 0
 BLOCK_SIZE = 16
 SEQUENCE_NUMBER = 3
 
