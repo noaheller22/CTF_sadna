@@ -12,7 +12,7 @@ from base64 import b64encode
 class ctf_server() :
     def __init__(self) :
         self.MASTER_ORACLE = 5
-        self.ciphers_num = 2
+        self.ciphers_num = 10
         self.master_message = 'YOU ARE MASTER OF ORACLES'
         self.stages_keys = {}
         for i in range(self.MASTER_ORACLE + 1):
