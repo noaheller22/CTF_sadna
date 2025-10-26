@@ -42,7 +42,7 @@ class CTF () :
     def test_oracle(self) :
             print("You are going to be presented with a number of ciphers. \n"\
             "For each one, decide whether the cipher has valid padding or not based on your oracle. \n"\
-            "Don't worry, you can still print details with 'd' and hints with 'h'\n")
+            "Don't worry, you can still print details with 'd' and hints with 'h'.\n")
             ciphers = self.get_ciphers()
             guesses = []
             i = 0
@@ -135,6 +135,7 @@ def main(save_path):
         print("\033[2J\033[H", end="")
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
+        print("\033[2J\033[H", end="")
         print(f"Welcome back! you are in stage {stage + 1}.\nURL/ip+port: {URL}.\nPublic key is:\n{public_key}")
         main_menu(URL, public_key)
     command = input(">>> ").strip()
