@@ -9,7 +9,6 @@ import argparse
 
 def send_cipher(cipher_b64, URL):
     if cipher_b64 == None : 
-        print("No cipher was given. Assuming check_status...")
         response = requests.get(URL)
     else : 
         # Decode Base64 to raw bytes
