@@ -39,7 +39,7 @@ class CTF () :
             game.hint_num+=1
 
     
-    def test_oracle(self, URL, public_key) :
+    def test_oracle(self) :
             print("You are going to be presented with a number of ciphers. \n"\
             "For each one, decide whether the cipher has valid padding or not based on your oracle. \n"\
             "Don't worry, you can still print details with 'd' and hint with 'h\n")
@@ -142,8 +142,8 @@ URL: {URL} \nPublic Key:\n{public_key}""")
         main_menu(URL, public_key)
 
 def main_menu(URL, public_key):
-    self.curr_pb = public_key
-    self.curr_URL = URL
+    game.curr_pb = public_key
+    game.curr_URL = URL
     while True: 
         if game.stage == game.MASTER_ORACLE :
             game.last_stage() 
@@ -156,7 +156,7 @@ def main_menu(URL, public_key):
             game.get_hint()
         elif cmd == "t":
             print("\033[2J\033[H", end="")
-            game.test_oracle(URL, public_key)
+            game.test_oracle()
         elif cmd == "d" :
             print("\033[2J\033[H", end="")
             print(f"""server you need to defeat is:
