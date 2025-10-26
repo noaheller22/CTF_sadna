@@ -11,7 +11,7 @@ from Crypto.Cipher import PKCS1_v1_5
 
 app = Flask(__name__)
 
-# 🔐 Load your private key (replace this with your actual key)
+# Load your private key
 with open("cooperation_stage/private4.pem", "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
 
@@ -21,7 +21,7 @@ lockout = {
 curr_cipher = {}
 LOCK_DURATION = 30
 
-# 🔐 Decryption & Padding Check
+# Decryption & Padding Check
 def is_padding_valid(ciphertext: bytes):
     cipher = PKCS1_v1_5.new(private_key)
     try :
@@ -64,7 +64,7 @@ def check_status(player_id):
     elif now < lockout[player_id] :
         return f"Processing...\n"
     else :
-        return f"Done with cyper: { base64.b64encode(curr_cipher[player_id]).decode()}\n"
+        return f"Done with cipher: { base64.b64encode(curr_cipher[player_id]).decode()}\n"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

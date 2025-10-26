@@ -42,7 +42,7 @@ class CTF () :
     def test_oracle(self) :
             print("You are going to be presented with a number of ciphers. \n"\
             "For each one, decide whether the cipher has valid padding or not based on your oracle. \n"\
-            "Don't worry, you can still print details with 'd' and hint with 'h\n")
+            "Don't worry, you can still print details with 'd' and hints with 'h'\n")
             ciphers = self.get_ciphers()
             guesses = []
             i = 0
@@ -61,7 +61,7 @@ class CTF () :
                 elif cmd == 'd' : 
                     print("\033[2J\033[H", end="")
                     print(f"""server you need to defeat is:
-URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
+URL/ip+port: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
                 elif cmd == 'h' : 
                     print("\033[2J\033[H", end="")
                     game.get_hint()    
@@ -75,7 +75,7 @@ URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
                 self.stage +=1
                 self.hint_num = 0
                 if self.stage != game.MASTER_ORACLE :
-                    print(f"Access next stage with URL {data['next_stage_URL']}")
+                    print(f"Access next stage with URL/ip+port {data['next_stage_URL']}")
                     print(f"The server's public key is: \n")
                     print(data['public_key'])
                     self.curr_pb = data['public_key']
@@ -89,6 +89,7 @@ URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
         if res['stage'] != game.MASTER_ORACLE :
             print("wrong stage!")
             exit()
+        print("\033[2J\033[H", end="")
         print(f"""************ \nThis is your chance to prove your worth.\n
 Prepare your bleichenbacher attack, and attack using the master oracle!\n
 URL: {res['URL']}\n 
@@ -131,14 +132,16 @@ def main(save_path):
     stage, URL, public_key = game.get_stage()
     game.stage = stage
     if stage == 0:
+        print("\033[2J\033[H", end="")
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
-        print(f"Welcome back! you are in stage {stage + 1}, URL: {URL}. public key is:\n{public_key}")
+        print(f"Welcome back! you are in stage {stage + 1}.\nURL/ip+port: {URL}.\nPublic key is:\n{public_key}")
         main_menu(URL, public_key)
     command = input(">>> ").strip()
     if command.lower() == 'y' :
+        print("\033[2J\033[H", end="")
         print(f"""Great! lets Start. The first server you need to defeat is:
-URL: {URL} \nPublic Key:\n{public_key}""")
+URL/ip+port: {URL} \nPublic Key:\n{public_key}""")
         main_menu(URL, public_key)
 
 def main_menu(URL, public_key):
@@ -159,8 +162,8 @@ def main_menu(URL, public_key):
             game.test_oracle()
         elif cmd == "d" :
             print("\033[2J\033[H", end="")
-            print(f"""server you need to defeat is:
-URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
+            print(f"""Server you need to defeat is:
+URL/ip+port: {game.curr_URL} \nPublic Key:\n{game.curr_pb}""")
         else : 
             print("Not a valid charachter. Try again.")              
 

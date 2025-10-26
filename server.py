@@ -87,10 +87,13 @@ def get_ciphers(player_id):
 def get_stage(player_id):
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
-
+    if game.curr_stage[player_id] == 3 :
+        URL = f"http://nova.cs.tau.ac.il:5004/send_cipher/{player_id}, http://nova.cs.tau.ac.il:5004/check_status/{player_id}"   
+    else : 
+        URL = game.URLs[game.curr_stage[player_id]]     
     res = {
     "stage": game.curr_stage[player_id],
-    "URL": game.URLs[game.curr_stage[player_id]],
+    "URL": URL,
     "public_key": game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="PEM").decode()
     }
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
