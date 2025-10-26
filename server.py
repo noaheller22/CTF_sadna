@@ -41,9 +41,9 @@ class ctf_server() :
         self.curr_stage = {}  
 
         self.URLs = {
-            0 : "http://nova.cs.tau.ac.il:5001" ,
-            1 : "http://nova.cs.tau.ac.il:5002" ,
-            2 : "http://nova.cs.tau.ac.il:5003" ,
+            0 : "nova.cs.tau.ac.il:5001" ,
+            1 : "nova.cs.tau.ac.il:5002" ,
+            2 : "nova.cs.tau.ac.il:5003" ,
             3 : "http://nova.cs.tau.ac.il:5004/send_cipher, http://nova.cs.tau.ac.il:5003/check_status" ,
             4 : "http://nova.cs.tau.ac.il:5005/config, http://nova.cs.tau.ac.il:5005/write, http://nova.cs.tau.ac.il:5005/read, http://nova.cs.tau.ac.il:5005/oracle" ,
             5 : "http://nova.cs.tau.ac.il:5006/oracle"
