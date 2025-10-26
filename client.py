@@ -39,8 +39,8 @@ class CTF () :
     
     def test_oracle(self, URL, public_key) :
             print("You are going to be presented with a number of ciphers. \n"\
-            "For each one, decide whether the cipher has valid padding or not based on your oracle. \n\
-            Don't worry, you can still print details with 'd' and hint with 'h\n")
+            "For each one, decide whether the cipher has valid padding or not based on your oracle. \n"\
+            "Don't worry, you can still print details with 'd' and hint with 'h\n")
             ciphers = self.get_ciphers()
             guesses = []
             i = 0
