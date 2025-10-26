@@ -21,6 +21,8 @@ class CTF () :
             3 : "third"
         }
         self.hint_num = 0
+        self.curr_URL = None
+        self.curr_pb = None 
 
     def get_stage(self) :
         res = requests.get(f"{BACKEND_URL}/get_stage/{PLAYER_ID}").json()
@@ -59,7 +61,7 @@ class CTF () :
                 elif cmd == 'd' : 
                     print("\033[2J\033[H", end="")
                     print(f"""server you need to defeat is:
-URL: {URL} \nPublic Key:\n{public_key}""")
+URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
                 elif cmd == 'h' : 
                     print("\033[2J\033[H", end="")
                     game.get_hint()    
@@ -76,6 +78,8 @@ URL: {URL} \nPublic Key:\n{public_key}""")
                     print(f"Access next stage with URL {data['next_stage_URL']}")
                     print(f"The server's public key is: \n")
                     print(data['public_key'])
+                    self.curr_pb = data['public_key']
+                    self.curr_URL = data['next_stage_URL']
             else:
                 print("Stage failed. You lost.")
                 exit()
@@ -138,6 +142,8 @@ URL: {URL} \nPublic Key:\n{public_key}""")
         main_menu(URL, public_key)
 
 def main_menu(URL, public_key):
+    self.curr_pb = public_key
+    self.curr_URL = URL
     while True: 
         if game.stage == game.MASTER_ORACLE :
             game.last_stage() 
@@ -154,7 +160,7 @@ def main_menu(URL, public_key):
         elif cmd == "d" :
             print("\033[2J\033[H", end="")
             print(f"""server you need to defeat is:
-URL: {URL} \nPublic Key:\n{public_key}""")
+URL: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
         else : 
             print("Not a valid charachter. Try again.")              
 

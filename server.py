@@ -44,7 +44,7 @@ class ctf_server() :
             0 : "nova.cs.tau.ac.il:5001" ,
             1 : "nova.cs.tau.ac.il:5002" ,
             2 : "nova.cs.tau.ac.il:5003" ,
-            3 : "http://nova.cs.tau.ac.il:5004/send_cipher, http://nova.cs.tau.ac.il:5003/check_status" ,
+            3 : "http://nova.cs.tau.ac.il:5004/send_cipher, http://nova.cs.tau.ac.il:5004/check_status" ,
             4 : "http://nova.cs.tau.ac.il:5005/config, http://nova.cs.tau.ac.il:5005/write, http://nova.cs.tau.ac.il:5005/read, http://nova.cs.tau.ac.il:5005/oracle" ,
             5 : "http://nova.cs.tau.ac.il:5006/oracle"
         }
