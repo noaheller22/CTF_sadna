@@ -29,7 +29,7 @@ class ctf_server() :
         clues_folders = {
             "./open-ssl-servers/Error-Message-Vulnerability/clues/" : 0,
             "./open-ssl-servers/Timing-Vulnerability/clues/" : 1,
-            "./cache_oracle/clues/" : 4
+            "./cache_server/clues/" : 4
         }
 
         for folder in clues_folders.keys() : 
