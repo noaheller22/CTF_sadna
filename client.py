@@ -61,7 +61,7 @@ class CTF () :
                 elif cmd == 'd' : 
                     print("\033[2J\033[H", end="")
                     print(f"""server you need to defeat is:
-URL/ip+port: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
+URL/ip+port:\n{self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
                 elif cmd == 'h' : 
                     print("\033[2J\033[H", end="")
                     game.get_hint()    
@@ -75,7 +75,7 @@ URL/ip+port: {self.curr_URL} \nPublic Key:\n{self.curr_pb}""")
                 self.stage +=1
                 self.hint_num = 0
                 if self.stage != game.MASTER_ORACLE :
-                    print(f"Access next stage with URL/ip+port {data['next_stage_URL']}")
+                    print(f"Access next stage with URL/ip+port:\n{data['next_stage_URL']}")
                     print(f"The server's public key is: \n")
                     print(data['public_key'])
                     self.curr_pb = data['public_key']
@@ -136,13 +136,13 @@ def main(save_path):
         print("Welcome to ctf game: Order of the Oracles. Would you like to begin? reply [y\\n]")
     else :
         print("\033[2J\033[H", end="")
-        print(f"Welcome back! you are in stage {stage + 1}.\nURL/ip+port: {URL}.\nPublic key is:\n{public_key}")
+        print(f"Welcome back! you are in stage {stage + 1}.\nURL/ip+port:\n{URL}.\nPublic key is:\n{public_key}")
         main_menu(URL, public_key)
     command = input(">>> ").strip()
     if command.lower() == 'y' :
         print("\033[2J\033[H", end="")
         print(f"""Great! lets Start. The first server you need to defeat is:
-URL/ip+port: {URL} \nPublic Key:\n{public_key}""")
+URL/ip+port:\n{URL} \nPublic Key:\n{public_key}""")
         main_menu(URL, public_key)
 
 def main_menu(URL, public_key):
@@ -164,7 +164,7 @@ def main_menu(URL, public_key):
         elif cmd == "d" :
             print("\033[2J\033[H", end="")
             print(f"""Server you need to defeat is:
-URL/ip+port: {game.curr_URL} \nPublic Key:\n{game.curr_pb}""")
+URL/ip+port:\n{game.curr_URL} \nPublic Key:\n{game.curr_pb}""")
         else : 
             print("Not a valid charachter. Try again.")              
 

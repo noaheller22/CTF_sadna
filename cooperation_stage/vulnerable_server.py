@@ -12,7 +12,7 @@ from Crypto.Cipher import PKCS1_v1_5
 app = Flask(__name__)
 
 # Load your private key
-with open("cooperation_stage/private4.pem", "rb") as key_file:
+with open("./private4.pem", "rb") as key_file:
     private_key = RSA.import_key(key_file.read())
 
 lockout = {

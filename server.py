@@ -8,6 +8,8 @@ import random
 import os
 import base64
 from base64 import b64encode
+import subprocess
+import time
 
 class ctf_server() :
     def __init__(self) :
@@ -44,8 +46,8 @@ class ctf_server() :
             0 : "nova.cs.tau.ac.il:5001" ,
             1 : "nova.cs.tau.ac.il:5002" ,
             2 : "nova.cs.tau.ac.il:5003" ,
-            3 : "http://nova.cs.tau.ac.il:5004/send_cipher, http://nova.cs.tau.ac.il:5004/check_status" ,
-            4 : "http://nova.cs.tau.ac.il:5005/config, http://nova.cs.tau.ac.il:5005/write, http://nova.cs.tau.ac.il:5005/read, http://nova.cs.tau.ac.il:5005/oracle" ,
+            3 : "http://nova.cs.tau.ac.il:5004/send_cipher/<player_id>,\nhttp://nova.cs.tau.ac.il:5004/check_status/<player_id>" ,
+            4 : "http://nova.cs.tau.ac.il:5005/config,\nhttp://nova.cs.tau.ac.il:5005/write,\nhttp://nova.cs.tau.ac.il:5005/read,\nhttp://nova.cs.tau.ac.il:5005/oracle" ,
             5 : "http://nova.cs.tau.ac.il:5006/oracle"
         }
 
@@ -80,20 +82,15 @@ def get_ciphers(player_id):
     if player_id not in game.curr_stage :
         game.curr_stage[player_id] = 0
     ciphers = generate_ciphers(game.stages_keys[game.curr_stage[player_id]])
-    print("sending ciphers")
     return jsonify({"ciphers": ciphers})
 
 @app.route("/get_stage/<player_id>", methods=["GET"])
 def get_stage(player_id):
     if player_id not in game.curr_stage :
-        game.curr_stage[player_id] = 0
-    if game.curr_stage[player_id] == 3 :
-        URL = f"http://nova.cs.tau.ac.il:5004/send_cipher/{player_id}, http://nova.cs.tau.ac.il:5004/check_status/{player_id}"   
-    else : 
-        URL = game.URLs[game.curr_stage[player_id]]     
+        game.curr_stage[player_id] = 0  
     res = {
     "stage": game.curr_stage[player_id],
-    "URL": URL,
+    "URL": game.URLs[game.curr_stage[player_id]] ,
     "public_key": game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="PEM").decode()
     }
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
@@ -153,5 +150,24 @@ def gen_master_message(player_id):
 
 if __name__ == "__main__":
     game = ctf_server()
+
+    servers = [
+        ("./open-ssl-servers/Error-Message-Vulnerability/", "vulnerable_server.py"),
+        ("./open-ssl-servers/Timing-Vulnerability/", "vulnerable_server.py"),
+        ("./open-ssl-servers/Timing-Vulnerability/", "client_proxy.py"),
+        ("./tcp_oracle/", "tcp_oracle_api.py"),
+        ("./cooperation_stage/", "vulnerable_server.py"),
+        ("./cache_server/", "server.py"),
+        ("./final_oracle/", "oracle_api.py"),
+        ]
+
+    procs = []
+    for cwd, script in servers:
+        print("starting server")
+        p = subprocess.Popen(["python3", script], cwd=cwd)
+        procs.append(p)
+        time.sleep(1)
+
     app.run(host="0.0.0.0", port=5000)
+
 
