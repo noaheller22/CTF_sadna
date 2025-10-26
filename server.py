@@ -60,11 +60,11 @@ def submit(player_id):
     guesses = request.json.get("guesses")
     if guesses == answers:
         game.curr_stage[player_id] +=1
-        next_key = game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="DER")
+        next_key = game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="PEM")
         res = {
             "result": "passed",     
             "next_stage_URL": game.URLs[game.curr_stage[player_id]], 
-            "public_key": b64encode(next_key).decode()
+            "public_key": next_key.decode()
         }
         return jsonify(res)
     return jsonify({"result": "fail"})
@@ -91,9 +91,7 @@ def get_stage(player_id):
     res = {
     "stage": game.curr_stage[player_id],
     "URL": game.URLs[game.curr_stage[player_id]],
-    "public_key": b64encode(
-        game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="DER")
-    ).decode()
+    "public_key": game.stages_keys[game.curr_stage[player_id]].publickey().export_key(format="PEM").decode()
     }
     if game.curr_stage[player_id] == game.MASTER_ORACLE :
         res['master_message'] = gen_master_message(player_id)

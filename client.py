@@ -37,9 +37,10 @@ class CTF () :
             game.hint_num+=1
 
     
-    def test_oracle(self) :
+    def test_oracle(self, URL, public_key) :
             print("You are going to be presented with a number of ciphers. \n"\
-            "For each one, decide whether the cipher has valid padding or not based on your oracle.")
+            "For each one, decide whether the cipher has valid padding or not based on your oracle. \n\
+            Don't worry, you can still print details with 'd' and hint with 'h\n")
             ciphers = self.get_ciphers()
             guesses = []
             i = 0
@@ -55,6 +56,13 @@ class CTF () :
                     guess = False
                     i +=1
                     guesses.append(guess)
+                elif cmd == 'd' : 
+                    print("\033[2J\033[H", end="")
+                    print(f"""server you need to defeat is:
+URL: {URL} \nPublic Key:\n{public_key}""")
+                elif cmd == 'h' : 
+                    print("\033[2J\033[H", end="")
+                    game.get_hint()    
                 else : 
                     print("Not a valid character. Lets try again:")
             res = requests.post(f"{BACKEND_URL}/submit/{PLAYER_ID}", json={"guesses": guesses})
@@ -142,7 +150,7 @@ def main_menu(URL, public_key):
             game.get_hint()
         elif cmd == "t":
             print("\033[2J\033[H", end="")
-            game.test_oracle()
+            game.test_oracle(URL, public_key)
         elif cmd == "d" :
             print("\033[2J\033[H", end="")
             print(f"""server you need to defeat is:
